@@ -1,0 +1,330 @@
+<!DOCTYPE html><html lang="[&quot;zh-CN&quot;,&quot;default&quot;]" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>树莓派家用指北 | 斯是陋室</title><meta name="keywords" content="服务器"><meta name="author" content="YueYong"><meta name="copyright" content="YueYong"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="前两天刚刚入职，最近几天忙着租房搬家，忙活了几天总算是住进了自己小屋里，作为一个软件工程师，怎么可以没有一台家用服务器呢？方案有很多种，上至几千元的 NAS，下至淘汰的老电脑，但是旧电脑响声大功耗高，NAS 动辄三四千的价格对我这个刚毕业的大学生来说着实有些困难，于是我将目光放到了另一个小玩意上——树莓派。 我选择树莓派的原因也很简单，第一便宜，第二可查阅的资料非常多，基本上你之后使用过程中的问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="树莓派家用指北">
+<meta property="og:url" content="https://blog.liangyueyong.cn/p/d6b4.html">
+<meta property="og:site_name" content="斯是陋室">
+<meta property="og:description" content="前两天刚刚入职，最近几天忙着租房搬家，忙活了几天总算是住进了自己小屋里，作为一个软件工程师，怎么可以没有一台家用服务器呢？方案有很多种，上至几千元的 NAS，下至淘汰的老电脑，但是旧电脑响声大功耗高，NAS 动辄三四千的价格对我这个刚毕业的大学生来说着实有些困难，于是我将目光放到了另一个小玩意上——树莓派。 我选择树莓派的原因也很简单，第一便宜，第二可查阅的资料非常多，基本上你之后使用过程中的问题">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.ytools.xyz/uPic/Hn6wR6Raspberry_Pi_Board_Layout.jpg">
+<meta property="article:published_time" content="2021-07-24T17:01:31.205Z">
+<meta property="article:modified_time" content="2021-07-24T17:02:06.220Z">
+<meta property="article:author" content="YueYong">
+<meta property="article:tag" content="服务器">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.ytools.xyz/uPic/Hn6wR6Raspberry_Pi_Board_Layout.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.liangyueyong.cn/p/d6b4"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-07-25 01:02:06'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://s1.ax1x.com/2020/09/08/wQQcbq.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">164</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">51</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://cdn.ytools.xyz/uPic/Hn6wR6Raspberry_Pi_Board_Layout.jpg)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">斯是陋室</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">树莓派家用指北</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-07-24T17:01:31.205Z" title="发表于 2021-07-25 01:01:31">2021-07-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-07-24T17:02:06.220Z" title="更新于 2021-07-25 01:02:06">2021-07-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%9E%E6%88%98%E6%95%99%E5%AD%A6/">实战教学</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>17分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/p/d6b4.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/p/d6b4.html" itemprop="commentCount"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>前两天刚刚入职，最近几天忙着租房搬家，忙活了几天总算是住进了自己小屋里，作为一个软件工程师，怎么可以没有一台家用服务器呢？方案有很多种，上至几千元的 NAS，下至淘汰的老电脑，但是旧电脑响声大功耗高，NAS 动辄三四千的价格对我这个刚毕业的大学生来说着实有些困难，于是我将目光放到了另一个小玩意上——树莓派。</p>
+<p>我选择树莓派的原因也很简单，第一便宜，第二可查阅的资料非常多，基本上你之后使用过程中的问题网络上都有解决方案了，因此本文不会介绍怎么使用树莓派，怎么烧录系统，这些东西有太多人写过了，我重复写也没什么意思，因此这块内容我就一笔带过了，本文是我自己的家用服务器方案，更多的是提供一个方向性的指导，如果你觉得我的文章对你有所帮助，欢迎点个关注支持一下哦～</p>
+<h2 id="什么是树莓派？"><a href="#什么是树莓派？" class="headerlink" title="什么是树莓派？"></a>什么是树莓派？</h2><p><img src="https://cdn.ytools.xyz/uPic/Hn6wR6Raspberry_Pi_Board_Layout.jpg"></p>
+<p>打开任何一个搜索引擎在里面输入<strong>「树莓派」</strong>三个字都会出现很多内容，其实树莓派本质上就是一台小电脑，虽然外形只有信用卡大小，却具有电脑的所有基本功能。和我们平常用的电脑不一样的是，树莓派自身是没有屏幕、键盘、鼠标这些东西的，但是它提供了网口、USB 口以及视频输出口（其实意思就是让你自己配）。</p>
+<p>当然了，树莓派和主流电脑一个很大的区别就是他的芯片，和主流的 x86 桌面级电脑不同的是，树莓派用的是低功耗的 ARM 芯片，因此在性能上和常规电脑还是有些差距的，不过随着近年来 ARM 芯片的不断发展，其性能已经和传统 x86 处理器不相伯仲，甚至在某些方面遥遥领先，例如苹果的 M1 芯片。这里推荐阅读我之前写的两篇文章 👉<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/_bgX7naRwxNwE71_Nzvmqw">《M1 暴打 Intel？——x86 与 ARM 的爱恨情仇》</a>和<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=Mzg2ODAyNTgyMQ==&mid=2247484681&idx=1&sn=aa4ec453f111157205111ec3d6022c5c&chksm=ceb3d1bbf9c458ad33758e466664d1b0bcdc3e5a348f8ad47a6ac068c8102414cdfee6a1140d&scene=178&cur_album_id=1418449495750311936#rd">《M1 暴打 Intel？——这次的芯片有何不同》</a></p>
+<p>好在在学校的这些年，有一些闲置的键盘、鼠标和移动硬盘没来得及出手，于是我便果断的选择了树莓派作为我的家用服务器。</p>
+<h2 id="树莓派的选择"><a href="#树莓派的选择" class="headerlink" title="树莓派的选择"></a>树莓派的选择</h2><p>打开淘宝搜索树莓派，眼花缭乱的，那应该如何选择呢？</p>
+<p><img src="https://cdn.ytools.xyz/uPic/epasthimage.png"></p>
+<p>其实很简单，虽然树莓派的型号众多，但是细分下来也只有三类：</p>
+<ol>
+<li>Model B 系列：旗舰版，接口全，性能强</li>
+<li>Model A 系列：青春版，外形小，性能一般，配置和接口略有阉割</li>
+<li>Zero 系列：迷你版，拥有超小身材，性能较弱</li>
+</ol>
+<p>目前，树莓派已经发展到了第四代了，如果资金不是非常紧张的，推荐购买树莓派 4B 版，官网对他的介绍如下：</p>
+<p><img src="https://cdn.ytools.xyz/uPic/0AhL3fimage%20(1).png"></p>
+<p>相较于前代，处理器性能大幅增强，并且最高支持 8G 内存，支持 4K 视频输出，同时使用 USB- C 供电，完全可以作为一个桌面级电脑使用了，用作家用服务器绰绰有余了。</p>
+<h2 id="操作系统选择"><a href="#操作系统选择" class="headerlink" title="操作系统选择"></a>操作系统选择</h2><p>说完了树莓派的硬件，怎么可以离开软件呢？树莓派相较于传统电脑另一个好处就是可以自由选择烧录的操作系统，官方推荐的是 Raspberry Pi OS，系统的烧录网上的教程太多了，这里我推荐直接使用官方提供的烧录软件<strong>「Raspberry Pi Imager」</strong>，从下面的图中也可以看出来是一个非常容易上手的软件了。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/1gVIjDiShot2021-07-18%2018.25.55.png"></p>
+<p>SD 卡选择 16G 的即可，如果容量大一些也是可以的，读写速度自然也是越快越好了，这里我烧录的系统是官方推荐的 Raspberry Pi OS，针对树莓派进行了性能优化，由于是基于 Debian 开发的操作系统，经常使用 Ubuntu 的同学上手难度会稍微低一些。</p>
+<p>当然了，你也可以选择烧录其他的操作系统，例如 Ubuntu、Manjaro、Android 等操作系统，甚至有人成功烧录了最近新出的 Windows11，链接在这里，有兴趣的小伙伴自行阅读 👉<a target="_blank" rel="noopener" href="https://www.tomshardware.com/how-to/install-windows-11-raspberry-pi#xenforo-comments-3710927">How to Install Windows 11 on a Raspberry Pi 4</a></p>
+<p><img src="https://cdn.ytools.xyz/uPic/hnBNf1iShot2021-07-18%2018.41.48.png"></p>
+<h2 id="家用树莓派方案指北"><a href="#家用树莓派方案指北" class="headerlink" title="家用树莓派方案指北"></a>家用树莓派方案指北</h2><p>说了树莓派软硬件的选择后，终于可以进入本文的正题了。</p>
+<p>树莓派的玩法有很多，网上有很多控制机器人、外接灯泡控制开关等，说实话，这些玩法教育意义大于实用意义，毕竟家用也不会把灯泡接到树莓派上，直接买个小米的智能灯泡控制体验不比这个好吗？</p>
+<p>之所以一开始就舍弃使用旧电脑作为家用服务器这一方案的一个原因就是功耗，网上有人对树莓派的功耗进行过测试，4B 的功耗：空闲时 2.7 W，负载时到 6.4 W。按照家里电费 0.7 元一度电的价格计算，一年 365 天每天 24 小时高负荷运行的电费也才<strong>6.4×24×365÷1000×0.7=39.2448 元</strong>。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/lxAFI6image%20(2).png"></p>
+<p>因此树莓派适用于一些适合 24 小时在线的服务，我的服务有：</p>
+<ol>
+<li>离线下载（Aria2、qbittorrent）</li>
+<li>米家、HomeKit 等智能家居中转控制（HomeAssistant）</li>
+<li>局域网文件共享（Samba）</li>
+<li>Linux Server（Docker）</li>
+<li>家庭 Dashboard 中控面板（Flutter Web）</li>
+<li>……</li>
+</ol>
+<p>接下来我将会按照顺序逐一介绍。</p>
+<h3 id="连接树莓派——连通性测试"><a href="#连接树莓派——连通性测试" class="headerlink" title="连接树莓派——连通性测试"></a>连接树莓派——连通性测试</h3><p>想要使用树莓派第一步肯定是连接上树莓派，连接树莓派的方式有很多种，直接接键盘、鼠标、显示器，或者通过 SSH/VNC/FTP，无论用何种方式只要能连接上网络即可。方便起见，建议先连接显示器，然后开启 SSH 和 VNC 服务。网络上的教程很多很详细，这里不再赘述。</p>
+<p>本节主要来介绍一个很关键但是很多文章都忽略的内容，即树莓派与个人电脑间的<strong>网络连通性测试</strong>。</p>
+<p>如果要实现诸如上述局域网共享文件、离线下载等功能，一个很重要的特点是工作电脑与树莓派之间的<strong>传输速度要快</strong>，不然我离线下载完文件后传到自己电脑上还要好久，那岂不是多此一举吗？</p>
+<p>由于大多数教程中工作电脑与树莓派的连接都是通过 WI-FI 而非网线的方式，因此在一开始就有必要针对二者的网络传输速度做一个测试，这里我推荐使用<strong>「iPerf3」</strong>，安装和使用都很简单。</p>
+<p>我们需要在树莓派上使用 apt 安装 iPerf3，然后启动 iPerf3 的服务。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 安装 iPerf3</span></span><br><span class="line">sudo apt install iperf3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动 iPerf3 服务</span></span><br><span class="line">iperf3 -p 3005 -s</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-p</code>设置监听的端口号，客户端需要使用该端口与服务端进行通信。</li>
+<li><code>-s</code>设置为服务模式运行。</li>
+</ul>
+<p>然后在工作电脑上也安装上 iPerf3 即可，mac 电脑直接执行 <code>brew install iperf3</code> 即可安装，然后我们只需执行下面的命令即可。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 测试 Mac 与树莓派之间的网速（我的树莓派内网 ip 为192.168.31.189）</span></span><br><span class="line">iperf3 -c 192.168.31.189 -p 3005</span><br></pre></td></tr></table></figure>
+
+<p>我的测试结果如下图所示：</p>
+<p><img src="https://cdn.ytools.xyz/uPic/wulSYOiShot2021-07-18%2019.47.16.png"></p>
+<p>换算一下，上传下载大约能有 7MB/s 的速度，虽然速度不是很快，但是基本可以用。</p>
+<blockquote>
+<p>PS：如果有小伙伴测试结束后发现连通速度有些慢，不妨检查下你的树莓派是否连接到 5GHz 的 Wi-Fi 上。</p>
+</blockquote>
+<p>确认连接速度可以正常使用后，我们便可以来安装使用一个非常重要的工具了——Docker。</p>
+<h3 id="使用-Docker-为树莓派赋能"><a href="#使用-Docker-为树莓派赋能" class="headerlink" title="使用 Docker 为树莓派赋能"></a>使用 Docker 为树莓派赋能</h3><p><img src="https://cdn.ytools.xyz/uPic/ZYNDp8docker.png"></p>
+<p>Docker 的存在使得开发者可以快速搭建自己所需要的开发环境，只需指定好镜像后即可快速生成所需要的容器环境。并且由于树莓派使用的是 ARM 架构的芯片，很多常用软件如果想要正常安装使用需要自行编译，这对于性能不够强悍的树莓派来说无疑是一种负担，为了让我们的精力聚焦在在实际的开发中，而不是纠缠着应用运行环境的问题上，这次我们使用 Docker 搭建所需要的开发环境，为树莓派赋能。</p>
+<blockquote>
+<p>对 Docker 还不了解的小伙伴可以移步 👉<a target="_blank" rel="noopener" href="https://yeasy.gitbook.io/docker_practice/">https://yeasy.gitbook.io/docker_practice/</a></p>
+</blockquote>
+<p>在树莓派上安装 Docker、配置镜像加速在上面的链接中都已给出，值得一提的是，Docker 的定位在于将容器内的环境搭建起来，但如果我们想将多个容器的运行方式和配置固定下来，应用于容器编排，则需要使用 Docker Compose。</p>
+<p>举个例子，我们有一个应用容器，需要 mysql 存储数据， nginx 作转发，消息队列作数据转化，那在每次启动前，需要将每个前置容器先启动，再把应用容器跑起来，这本身就是一个重复的动作。而且在启动时，还需要针对每个容器进行不同的配置，所以为了<strong>实现对多个容器的组合管理</strong>，例如规定容器启动顺序，规定好配置内容等行为，Docker Compose 便应运而生了。</p>
+<p>Docker Compose 的安装方式有很多种，但由于 ARM 架构的限制，树莓派上的 Docker Compose 建议使用 pip 安装。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo pip3 install -U docker-compose</span><br></pre></td></tr></table></figure>
+
+<p><strong>！！！一定是 Python3 版本的 pip，所以建议直接使用 pip3</strong></p>
+<h3 id="监管你的-Docker——Portainer"><a href="#监管你的-Docker——Portainer" class="headerlink" title="监管你的 Docker——Portainer"></a>监管你的 Docker——Portainer</h3><p><img src="https://cdn.ytools.xyz/uPic/yRTqY3altec-467fv.jpg"></p>
+<p>Portainer 是 Docker 的轻量级，跨平台和开源管理 UI。你可以通过 WebUI 管理你的 docker 容器，镜像，网络和卷。他的安装也很简单，直接执行以下命令即可。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d -p 8000:8000 -p 9000:9000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce</span><br></pre></td></tr></table></figure>
+
+<p>安装完成后如下图所示 👇</p>
+<p><img src="https://cdn.ytools.xyz/uPic/I14JWLiShot2021-07-22%2023.54.21.png"></p>
+<h3 id="监控面板——Pi-Dashboard"><a href="#监控面板——Pi-Dashboard" class="headerlink" title="监控面板——Pi Dashboard"></a>监控面板——Pi Dashboard</h3><p>有了 Docker 之后，我们便可以方便快速的进行各种软件的安装了。为了方便监控我们的树莓派情况，首当其冲的便是 Pi Dashboard。</p>
+<p>安装很简单，只需执行下面一行命令 👇</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo docker run -d --name docker-pi-dashboard -e <span class="string">&#x27;LISTEN=1024&#x27;</span> --net=host ecat/docker-pi-dashboard</span><br></pre></td></tr></table></figure>
+
+<p>启动完毕后可以通过</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo docker ps | grep docker-pi-dashboard</span><br></pre></td></tr></table></figure>
+
+<p>来确认我们的容器是否启动成功，如果启动成功，在浏览器中输入<code>&lt;你的IP地址&gt;:1024</code>即可访问到 pi dashboard 了。如下图所示 👇</p>
+<p><img src="https://cdn.ytools.xyz/uPic/yns1H5image%20(3).png"></p>
+<h3 id="智能家居——HomeAssistant"><a href="#智能家居——HomeAssistant" class="headerlink" title="智能家居——HomeAssistant"></a>智能家居——HomeAssistant</h3><p>智能家居是眼下最火的领域之一，小米、苹果、华为等都在布局该领域，旗下的米家、HomeKit 等都已经提供了非常完善的服务，那么我们为什么要在树莓派上搭建一套智能家居系统呢？</p>
+<p>其实原因很简单，虽然目前智能家居产品众多，但是尚未有一种智能家居解决方案同时满足设备种类多、交互体验好、成本低廉的特性，为此很多情况我们都会选择某一家的某一些产品，这就有可能会造成整个家里出现小米的台灯、华为的传感器、苹果的音箱等多种混乱的局面，然后你还要安装多个 App，这种体验无疑是非常差的。</p>
+<p>在计算机领域有一句名言——<strong>所有兼容问题都可以通过加一层抽象解决，所有性能问题都可以通过去掉一层抽象解决。</strong>既然这样，何不在这些智能家居平台基础上再抽出一层，提供一个统一的控制入口？</p>
+<p>答案自然是可以的，并且已经有人将方案开源出来了，这就是本节要介绍的 HomeAssistant。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/0zz2HLimage%20(4).png"></p>
+<p>无论是米家还是 HomeKit 都只能在各自的生态中使用，米家只有移动端 App，HomeKit 虽然覆盖了平板、手机、电脑、手表等，但也仅限苹果生态。（互联网发展了这么多年，却忘记了他最开始的形态，真不知道这是一种进步还是一种悲哀）</p>
+<p>扯了这么远，回到正题，HomeAssistant 的安装使用非常简单，官网已经写的非常详细了 👉<a target="_blank" rel="noopener" href="https://www.home-assistant.io/installation/raspberrypi#docker-compose">https://www.home-assistant.io/installation/raspberrypi#docker-compose</a></p>
+<p>推荐使用 Docker Compose 安装。</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&quot;3&quot;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">homeassistant:</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">homeassistant</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">&quot;ghcr.io/home-assistant/raspberrypi4-homeassistant:stable&quot;</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/PATH_TO_YOUR_CONFIG:/config</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/etc/localtime:/etc/localtime:ro</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">    <span class="attr">privileged:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">network_mode:</span> <span class="string">host</span></span><br></pre></td></tr></table></figure>
+
+<p>指定好 volumes 的路径后执行<code>docker-compose up -d</code>指令即可。</p>
+<h4 id="米家的接入"><a href="#米家的接入" class="headerlink" title="米家的接入"></a>米家的接入</h4><p>安装好之后你的家庭应该是空的，如果想要绑定米家设备，可以接入米家的 MIoT 插件，文档 👉<a target="_blank" rel="noopener" href="https://github.com/al-one/hass-xiaomi-miot/blob/master/README_zh.md">https://github.com/al-one/hass-xiaomi-miot/blob/master/README_zh.md</a></p>
+<p>填写好自己的小米账号和密码后，即可利用网页在 HomeAssistant 中查看使用自己的米家设备，以此达到跨平台的目的。下图是我自己配置的控制页面 👇</p>
+<p><img src="https://cdn.ytools.xyz/uPic/Q19IOQimage%20(5).png"></p>
+<h4 id="开放能力——REST-API"><a href="#开放能力——REST-API" class="headerlink" title="开放能力——REST API"></a>开放能力——REST API</h4><p>如果只是提供了一个网页用于控制，那么本质上也就是在交互体验上进行了优化，并不值得单独开一小节。HomeAssistant 作为一个开源产品，最大的优势在于提供了开放的能力，使每个用户按照自己的想法去进行更改设置，我们完全可以根据 HA 提供的 REST API 针对自己的需求定制化。（例如制作一个属于你自己的家庭枢纽，后面会提到）</p>
+<p>HomeAssistant 默认是不会开放 REST API 功能，你需要在<code>configuration.yaml</code>文件中配置一下<code>api</code>选项，如下图所示 👇</p>
+<p><img src="https://cdn.ytools.xyz/uPic/xKrSQIiShot2021-07-24%2001.58.00.png"></p>
+<p>关于 HomeAssistant 可配置的选项还有很多，具体的可以参考文档 👉<a target="_blank" rel="noopener" href="https://developers.home-assistant.io/">https://developers.home-assistant.io/</a></p>
+<h3 id="离线下载——Aria2"><a href="#离线下载——Aria2" class="headerlink" title="离线下载——Aria2"></a>离线下载——Aria2</h3><p>有些资源下载时间较长，不适合电脑长期挂机下载的，这时就可以将我们的树莓派变成一个离线下载的服务器。提到下载，不可不提的一个神器便是 Aria2。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/pVkwL6image.png"></p>
+<p>Aria2 是一款自由、跨平台<strong>命令行界面</strong>的下载管理器，和 wget 这类下载器不同的是，Aria2 不仅支持 BitTorrent，还能够从各种来源多路检索所请求的文件。包括 HTTP，HTTPS，FTP 和 BitTorrent 协议。</p>
+<blockquote>
+<p>对种子下载原理感兴趣的同学可以阅读我的这篇文章 👉<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/f1oXYrUkqjEsz51PMGLV8A">《人人都是 LSP？—— 种子与文件下载的相爱相杀》</a></p>
+</blockquote>
+<p>而且 Raspbain 系统默认已经安装了 Aria2，运行 apt-cache show aria2 即可查看安装信息，因此我们要做的就是为 Aria2 找一个图形化界面即可，使用 Docker 的一大好处就是可以直接去找别人已经打包好的镜像文件，让安装使用变得十分易用。</p>
+<p>只需执行下述命令即可启动一个 Aira2 的图形化界面了 👇</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d --name aria2-ui-pi -p 8888:80 -p 6800:6800 -v /data:/data --restart=always huangzulin/aria2-ui-pi</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>默认下载路径是在容器内的 /data 文件夹，为了方便使用最好指定一个 volume 映射</p>
+</blockquote>
+<h3 id="局域网文件共享——Samba"><a href="#局域网文件共享——Samba" class="headerlink" title="局域网文件共享——Samba"></a>局域网文件共享——Samba</h3><p>现在，手机是 Android/iOS，电脑是 Win/Mac，除去苹果生态，设备与设备之间的文件传输直至今日仍然是一个大问题。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/7BhRsRimage%20(1).png"></p>
+<p>Samba 是在 Linux 和 UNIX 系统上实现 SMB 协议的一个免费软件，SMB（Server Messages Block，信息服务块）是一种在局域网上共享文件和打印机的一种通信协议，它为局域网内的不同计算机之间提供文件及打印机等资源的共享服务。通过该协议，你可以快速方便的在 Win 与 Linux/Unix 之间分享文件，而不是通过 QQ 在线传文件。</p>
+<p>安装过程也十分简单，你可以选择 apt 安装也可以选择 docker 直接安装，网上的教程非常多，详情可参考 👉<a target="_blank" rel="noopener" href="https://ee-fans.com/%E5%9C%A8%E6%A0%91%E8%8E%93%E6%B4%BE%E4%B8%8A%E9%85%8D%E7%BD%AEsamba%E6%9C%8D%E5%8A%A1%E6%95%99%E7%A8%8B/">在树莓派上配置 Samba 服务教程</a></p>
+<h3 id="打造属于你自己的家庭枢纽"><a href="#打造属于你自己的家庭枢纽" class="headerlink" title="打造属于你自己的家庭枢纽"></a>打造属于你自己的家庭枢纽</h3><p>无论是 HomeAssistant 还是 Aria2，这些都是别人写好的东西，如果你想让树莓派更加定制化，你可以按照自己的想法去边写一些小程序（这也就是为什么之前要提一下开放 HomeAssistant 的 REST API）。</p>
+<p>如果想要让自己的程序运行在树莓派上，大致有以下几条路可以走 👇</p>
+<p><img src="https://cdn.ytools.xyz/uPic/p2gmMfimage%20(2).png"></p>
+<p>为了打造一个属于自己的家庭枢纽，我的想法是在一块<strong>可以触摸的屏幕</strong>上控制自己家的智能家居设备（借助 HomeAssistant），直观地查看天气（和风天气），追踪快递行程（爬虫）、时钟、纪念日/倒数日/照片墙等，因此这是一个完整的网页，我选择的技术栈是 SpringBoot + Flutter Web + Nginx，然后使用 Docker 打包成一个镜像启动整个服务。</p>
+<p>部分页面如下 👇</p>
+<p><img src="https://cdn.ytools.xyz/uPic/gm1fgiiShot2021-07-25%2000.15.11.png"></p>
+<p>我在做的就是 Java 相关的工作，后端选择 SpringBoot 无可厚非，之所以选择 Flutter Web 而不是传统的 Vue 或者 React，一方面是因为 Flutter 的声明式 UI 写起来确实比传统 Web 页面编写更舒服，效率更高，另一方面九是因为用 Flutter 写的网页可以无缝转换成在 Android/iOS/PC/Linux/macOS 这些平台上的原生 App，有助于后期针对多个平台的覆盖（当然更多还是因为我已经把 Vue 和 React 忘的差不多了)。</p>
+<p>目前这个网页比较简陋，还有很多我想做的功能没来得及做上去，但后续我准备持续更新这个代码，后续如果在家里运行效果还不错的话，甚至有想开源出去的想法，不过这就是后话了。</p>
+<h3 id="随时随地访问——内网穿透"><a href="#随时随地访问——内网穿透" class="headerlink" title="随时随地访问——内网穿透"></a>随时随地访问——内网穿透</h3><p>玩了这么多东西，有没有发现一个最大的问题？</p>
+<p>没错，就是这些所有的东西必须要求你的电脑和树莓派处在同一个网络里，即局域网环境里。虽然我一开始的使用场景就是在家里使用，但如果我在公司突然想看一部美剧了，但是用公司电脑下载视频显然是不现实的，如果这时候我可以在外网直接访问家里树莓派的离线下载服务，那么下班回家后岂不就可以看到自己想看的电影了吗？</p>
+<p>所以，最好的方式就是联系你的宽带运营商，并申请一个公网 IP，这样你就可以通过这个公网 IP 访问到你的树莓派了。</p>
+<p>据我所知，目前只有电信的部分地区会给公网 IP，大多数运营商是不会提供公网 IP 的，而且申请流程很麻烦，所以为了可以随时随地的从外网访问家里服务器的文件或其他服务，我们可以为树莓派做一个<strong>「内网穿透」</strong>。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/ref6j1image%20(4).png"></p>
+<p>「计算机领域的大多数问题都可以通过增加一层来解决」，所谓内网穿透，无非是在内部网络和互联网之间增加一个中转服务器，这个中转服务器负责接收你的请求并转发到内部服务器，也即<strong>「代理」</strong>。</p>
+<p>当然了，内网穿透的原理肯定不会这么简单，这里只是通俗的解释一下，如果之后有机会来详细说下。所以为了实现内网穿透，我们需要有一台可以公网访问的服务器作为中转桥梁，这时我突然想到我毕业前买的学生机还没到期呢，现在刚好在吃灰，拿它来做中转岂不是最好的？</p>
+<p>内网穿透服务器的选择有很多，FRP 是用的最多的，但我这里选择的是 👉<a target="_blank" rel="noopener" href="https://github.com/ehang-io/nps">nps</a>，原因也很简单，页面好看，交互简单，性能够用。</p>
+<p>nps 是一款轻量级、高性能、功能强大的内网穿透代理服务器。目前支持 tcp、udp 流量转发，可支持<strong>任何 tcp、udp 上层协议</strong>（访问内网网站、本地支付接口调试、ssh 访问、远程桌面，内网 dns 解析等等……），此外还支持内网 http 代理、内网 socks5 代理、p2p 等，并带有功能强大的 web 管理端。</p>
+<p>我们只需要在云主机上安装好服务端，并按照后台提示在树莓派上安装好客户端，简单设置自己要转发的端口即可实现内网穿透。</p>
+<p>官方文档在 👉<a target="_blank" rel="noopener" href="https://ehang-io.github.io/nps/#/?id=nps">https://ehang-io.github.io/nps/#/?id=nps</a></p>
+<p><img src="https://cdn.ytools.xyz/uPic/rXvIwbiShot2021-07-25%2000.03.34.png"></p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>拥有一台树莓派最大的好处就是可以充分发挥你的灵感与创意，如果你有想法、有能力、有时间，不妨让树莓派成为你实现想法的载体。</p>
+<p>最后扯一点文章之外的，工作之后的时间果然少了很多，这篇文章从开始写到现在完成差不多花了一个星期，阿里的工作强度的确很大，每天下班到家多半也是 10 点之后的事情了，能留出来码字的时间实在有限，难得周末有空，把近期搬家捣鼓自己家的想法写下来，也算是自己新阶段的开始。这段时间阅读了很多内部的优秀文档，也希望自己未来的文章可以像内网的大神们一样更专业，新的征程加油！</p>
+<p>以上就是本文的全部内容了，如果觉得还不错的话，不妨给我一个点赞关注支持一下哦 👍</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">YueYong</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.liangyueyong.cn/p/d6b4.html">https://blog.liangyueyong.cn/p/d6b4.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.liangyueyong.cn" target="_blank">斯是陋室</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/">服务器</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.ytools.xyz/uPic/Hn6wR6Raspberry_Pi_Board_Layout.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/p/c0e2.html"><img class="next-cover" src="https://cdn.ytools.xyz/uPic/NS7lqsiShot2021-06-12%2000.58.18.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">给编译器看的注释——「注解」</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="https://s1.ax1x.com/2020/09/08/wQQcbq.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">YueYong</div><div class="author-info__description">凡是过往，皆为序章</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">164</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">51</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YueYongDEV"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YueYongDEV" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yueyong1030@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">微信公众号「01二进制」</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%A0%91%E8%8E%93%E6%B4%BE%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">什么是树莓派？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%91%E8%8E%93%E6%B4%BE%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-number">2.</span> <span class="toc-text">树莓派的选择</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%80%89%E6%8B%A9"><span class="toc-number">3.</span> <span class="toc-text">操作系统选择</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%B6%E7%94%A8%E6%A0%91%E8%8E%93%E6%B4%BE%E6%96%B9%E6%A1%88%E6%8C%87%E5%8C%97"><span class="toc-number">4.</span> <span class="toc-text">家用树莓派方案指北</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E6%A0%91%E8%8E%93%E6%B4%BE%E2%80%94%E2%80%94%E8%BF%9E%E9%80%9A%E6%80%A7%E6%B5%8B%E8%AF%95"><span class="toc-number">4.1.</span> <span class="toc-text">连接树莓派——连通性测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-Docker-%E4%B8%BA%E6%A0%91%E8%8E%93%E6%B4%BE%E8%B5%8B%E8%83%BD"><span class="toc-number">4.2.</span> <span class="toc-text">使用 Docker 为树莓派赋能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%91%E7%AE%A1%E4%BD%A0%E7%9A%84-Docker%E2%80%94%E2%80%94Portainer"><span class="toc-number">4.3.</span> <span class="toc-text">监管你的 Docker——Portainer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%91%E6%8E%A7%E9%9D%A2%E6%9D%BF%E2%80%94%E2%80%94Pi-Dashboard"><span class="toc-number">4.4.</span> <span class="toc-text">监控面板——Pi Dashboard</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%99%BA%E8%83%BD%E5%AE%B6%E5%B1%85%E2%80%94%E2%80%94HomeAssistant"><span class="toc-number">4.5.</span> <span class="toc-text">智能家居——HomeAssistant</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B1%B3%E5%AE%B6%E7%9A%84%E6%8E%A5%E5%85%A5"><span class="toc-number">4.5.1.</span> <span class="toc-text">米家的接入</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%80%E6%94%BE%E8%83%BD%E5%8A%9B%E2%80%94%E2%80%94REST-API"><span class="toc-number">4.5.2.</span> <span class="toc-text">开放能力——REST API</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A6%BB%E7%BA%BF%E4%B8%8B%E8%BD%BD%E2%80%94%E2%80%94Aria2"><span class="toc-number">4.6.</span> <span class="toc-text">离线下载——Aria2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%80%E5%9F%9F%E7%BD%91%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB%E2%80%94%E2%80%94Samba"><span class="toc-number">4.7.</span> <span class="toc-text">局域网文件共享——Samba</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E9%80%A0%E5%B1%9E%E4%BA%8E%E4%BD%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E5%AE%B6%E5%BA%AD%E6%9E%A2%E7%BA%BD"><span class="toc-number">4.8.</span> <span class="toc-text">打造属于你自己的家庭枢纽</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%8F%E6%97%B6%E9%9A%8F%E5%9C%B0%E8%AE%BF%E9%97%AE%E2%80%94%E2%80%94%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F"><span class="toc-number">4.9.</span> <span class="toc-text">随时随地访问——内网穿透</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%90%8E"><span class="toc-number">5.</span> <span class="toc-text">最后</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/p/d6b4.html" title="树莓派家用指北"><img src="https://cdn.ytools.xyz/uPic/Hn6wR6Raspberry_Pi_Board_Layout.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="树莓派家用指北"/></a><div class="content"><a class="title" href="/p/d6b4.html" title="树莓派家用指北">树莓派家用指北</a><time datetime="2021-07-24T17:01:31.205Z" title="发表于 2021-07-25 01:01:31">2021-07-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/c0e2.html" title="给编译器看的注释——「注解」"><img src="https://cdn.ytools.xyz/uPic/NS7lqsiShot2021-06-12%2000.58.18.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="给编译器看的注释——「注解」"/></a><div class="content"><a class="title" href="/p/c0e2.html" title="给编译器看的注释——「注解」">给编译器看的注释——「注解」</a><time datetime="2021-06-14T07:23:23.088Z" title="发表于 2021-06-14 15:23:23">2021-06-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/ec8b.html" title="未雨绸缪，小米前端实习面经"><img src="https://tva1.sinaimg.cn/large/00831rSTgy1gdk2ny4uugj30xo0he0yu.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="未雨绸缪，小米前端实习面经"/></a><div class="content"><a class="title" href="/p/ec8b.html" title="未雨绸缪，小米前端实习面经">未雨绸缪，小米前端实习面经</a><time datetime="2021-06-10T11:50:25.448Z" title="发表于 2021-06-10 19:50:25">2021-06-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/e834.html" title="计算机相关专业实习指北"><img src="https://tva1.sinaimg.cn/large/007S8ZIlgy1gdquuna43wj30zk0quaf8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="计算机相关专业实习指北"/></a><div class="content"><a class="title" href="/p/e834.html" title="计算机相关专业实习指北">计算机相关专业实习指北</a><time datetime="2021-06-10T11:50:25.448Z" title="发表于 2021-06-10 19:50:25">2021-06-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/4fa2.html" title="搏一搏，单车变摩托，记录一下我的淘宝实习面试"><img src="https://tva1.sinaimg.cn/large/00831rSTgy1gdk77kyd9vj30k40budh9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="搏一搏，单车变摩托，记录一下我的淘宝实习面试"/></a><div class="content"><a class="title" href="/p/4fa2.html" title="搏一搏，单车变摩托，记录一下我的淘宝实习面试">搏一搏，单车变摩托，记录一下我的淘宝实习面试</a><time datetime="2021-06-10T11:50:25.447Z" title="发表于 2021-06-10 19:50:25">2021-06-10</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2017 - 2021 By YueYong</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'U0W7ATmVTjBxWkHt96LR9Bj0-gzGzoHsz',
+      appKey: 'uko1Os2bkFSID34qVRrgjCcX',
+      placeholder: '记得留下你的昵称和邮箱....可以快速收到回复',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: true,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: {"tv_doge":"6ea59c827c414b4a2955fe79e0f6fd3dcd515e24.png","tv_親親":"a8111ad55953ef5e3be3327ef94eb4a39d535d06.png","tv_偷笑":"bb690d4107620f1c15cff29509db529a73aee261.png","tv_再見":"180129b8ea851044ce71caf55cc8ce44bd4a4fc8.png","tv_冷漠":"b9cbc755c2b3ee43be07ca13de84e5b699a3f101.png","tv_發怒":"34ba3cd204d5b05fec70ce08fa9fa0dd612409ff.png","tv_發財":"34db290afd2963723c6eb3c4560667db7253a21a.png","tv_可愛":"9e55fd9b500ac4b96613539f1ce2f9499e314ed9.png","tv_吐血":"09dd16a7aa59b77baa1155d47484409624470c77.png","tv_呆":"fe1179ebaa191569b0d31cecafe7a2cd1c951c9d.png","tv_嘔吐":"9f996894a39e282ccf5e66856af49483f81870f3.png","tv_困":"241ee304e44c0af029adceb294399391e4737ef2.png","tv_壞笑":"1f0b87f731a671079842116e0991c91c2c88645a.png","tv_大佬":"093c1e2c490161aca397afc45573c877cdead616.png","tv_大哭":"23269aeb35f99daee28dda129676f6e9ea87934f.png","tv_委屈":"d04dba7b5465779e9755d2ab6f0a897b9b33bb77.png","tv_害羞":"a37683fb5642fa3ddfc7f4e5525fd13e42a2bdb1.png","tv_尷尬":"7cfa62dafc59798a3d3fb262d421eeeff166cfa4.png","tv_微笑":"70dc5c7b56f93eb61bddba11e28fb1d18fddcd4c.png","tv_思考":"90cf159733e558137ed20aa04d09964436f618a1.png","tv_驚嚇":"0d15c7e2ee58e935adc6a7193ee042388adc22af.png"},
+      enableQQ: true,
+      path: window.location.pathname,
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>
