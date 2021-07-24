@@ -1,7 +1,7 @@
 ---
 title: 如何一步步 get 大厂前端 offer，你也许可以参考这份成长经历。
 categories:
-  - 来都来了
+  - 面试学习
 tags:
   - 心得
 cover: 'https://tva1.sinaimg.cn/large/007S8ZIlgy1gjmk2e96xnj31400miwg8.jpg'
