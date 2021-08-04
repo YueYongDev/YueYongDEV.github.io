@@ -1,0 +1,272 @@
+<!DOCTYPE html><html lang="[&quot;zh-CN&quot;,&quot;default&quot;]" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>一次跨域问题的分析 | 斯是陋室</title><meta name="keywords" content="问题排查"><meta name="author" content="YueYong"><meta name="copyright" content="YueYong"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="事件起因一个需求让我开放一个 HTTP 接口给前端，在联调的过程中，前端请求时出现了一个 CORS 错误，也即跨域问题，错误如下 👇  一开始我的想法是，跨域问题，这我熟啊，在学校写代码的时候就经常遇到，这解决起来不是分分钟的吗。 可更改之后我傻眼了，为什么一直不生效？我陷入了沉思。 在继续描述之前，我们先来了解下到底什么是跨域以及常见的解决方案有哪些。 什么是跨域所谓跨域，全称是 跨源资源共">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一次跨域问题的分析">
+<meta property="og:url" content="https://blog.liangyueyong.cn/p/35e3.html">
+<meta property="og:site_name" content="斯是陋室">
+<meta property="og:description" content="事件起因一个需求让我开放一个 HTTP 接口给前端，在联调的过程中，前端请求时出现了一个 CORS 错误，也即跨域问题，错误如下 👇  一开始我的想法是，跨域问题，这我熟啊，在学校写代码的时候就经常遇到，这解决起来不是分分钟的吗。 可更改之后我傻眼了，为什么一直不生效？我陷入了沉思。 在继续描述之前，我们先来了解下到底什么是跨域以及常见的解决方案有哪些。 什么是跨域所谓跨域，全称是 跨源资源共">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.ytools.xyz/uPic/NYnfBucontent_SSD_Awarded.jpg">
+<meta property="article:published_time" content="2021-08-04T15:53:14.366Z">
+<meta property="article:modified_time" content="2021-08-04T15:53:47.223Z">
+<meta property="article:author" content="YueYong">
+<meta property="article:tag" content="问题排查">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.ytools.xyz/uPic/NYnfBucontent_SSD_Awarded.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.liangyueyong.cn/p/35e3"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-08-04 23:53:47'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://s1.ax1x.com/2020/09/08/wQQcbq.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">167</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">52</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://cdn.ytools.xyz/uPic/NYnfBucontent_SSD_Awarded.jpg)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">斯是陋室</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">一次跨域问题的分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-08-04T15:53:14.366Z" title="发表于 2021-08-04 23:53:14">2021-08-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-08-04T15:53:47.223Z" title="更新于 2021-08-04 23:53:47">2021-08-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%9E%E6%88%98%E6%95%99%E5%AD%A6/">实战教学</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/p/35e3.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/p/35e3.html" itemprop="commentCount"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><img src="https://cdn.ytools.xyz/uPic/NYnfBucontent_SSD_Awarded.jpg"></p>
+<h2 id="事件起因"><a href="#事件起因" class="headerlink" title="事件起因"></a>事件起因</h2><p>一个需求让我开放一个 HTTP 接口给前端，在联调的过程中，前端请求时出现了一个 CORS 错误，也即跨域问题，错误如下 👇</p>
+<p><img src="https://cdn.ytools.xyz/uPic/F3K3pnimage-20210804232717292.png"></p>
+<p>一开始我的想法是，跨域问题，这我熟啊，在学校写代码的时候就经常遇到，这解决起来不是分分钟的吗。</p>
+<p>可更改之后我傻眼了，为什么一直不生效？我陷入了沉思。</p>
+<p>在继续描述之前，我们先来了解下到底什么是跨域以及常见的解决方案有哪些。</p>
+<h2 id="什么是跨域"><a href="#什么是跨域" class="headerlink" title="什么是跨域"></a>什么是跨域</h2><p>所谓跨域，全称是 <strong>跨源资源共享 (CORS)</strong> Cross- Origin Resource Sharing ，是一种基于 HTTP Header 的机制，该机制通过允许服务器标示除了它自己以外的其它 origin（域，协议和端口），这样浏览器可以访问加载这些资源。</p>
+<p>举个例子：运行在 <a target="_blank" rel="noopener" href="https://domain-a.com/">https://domain-a.com</a> 的 JavaScript 代码使用 <code>XMLHttpRequest</code> 分别发起两个请求 👇</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">请求A： https:&#x2F;&#x2F;domain-a.com&#x2F;query</span><br><span class="line">请求B： https:&#x2F;&#x2F;domain-b.com&#x2F;query</span><br></pre></td></tr></table></figure>
+
+<p>由于发请求的页面站点为 domain-a.com，所以请求 A 属于同源请求，domain-a.com 的后台服务器是允许请求。但是请求 B 的站点域是 domain-b.com，如果要发请求到 domain-b.com，就属于跨源访问，出于安全性考虑，浏览器限制脚本内发起的跨源 HTTP 请求。如下图所示：</p>
+<p><img src="https://cdn.ytools.xyz/uPic/XoyQ13image-20210804232800957.png"></p>
+<p>因此，为了解决上述问题，跨源域资源共享（ CORS )机制就应运而生了。该机制允许 Web 应用服务器进行跨源访问控制，从而使跨源数据传输得以安全进行。</p>
+<h2 id="CORS-工作机制"><a href="#CORS-工作机制" class="headerlink" title="CORS 工作机制"></a>CORS 工作机制</h2><p>跨源资源共享标准新增了一组 HTTP 首部字段，允许服务器声明哪些源站通过浏览器有权限访问哪些资源。</p>
+<p>而且对那些可能对服务器数据产生副作用的 HTTP 请求方法（特别是 GET 以外的 HTTP 请求，或者搭配某些 MIME 类型的 POST 请求），浏览器必须首先使用 <strong>OPTIONS</strong> 方法发起一个预检请求（preflight request），从而获知服务端是否允许该跨源请求。</p>
+<p>只有在服务器确认允许之后，才发起实际的 HTTP 请求。在预检请求的返回中，服务器端也可以通知客户端，是否需要携带身份凭证（包括 Cookies 和 HTTP 认证相关数据）。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/crGpxqimage-20210804232830163.png"></p>
+<p>大致流程如上图所示，CORS 请求失败会产生错误，但是为了安全，在 JavaScript 代码层面是无法获知到底具体是哪里出了问题。你只能查看浏览器的控制台以得知具体是哪里出现了错误。</p>
+<p>在新增的这一组 HTTP 首部字段中，最重要的便是 Access-Control-Allow-Origin，其语法如下：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Access-Control-Allow-Origin: &lt;origin&gt; | *</span><br></pre></td></tr></table></figure>
+
+<p>其中，origin 参数的值指定了允许访问该资源的外域 URI。对于不需要携带身份凭证的请求，服务器可以指定该字段的值为通配符，表示允许来自所有域的请求。</p>
+<p>例如，下面的字段值将允许来自 <a target="_blank" rel="noopener" href="http://www.domain-a.com/">http://www.domain-a.com</a> 的请求：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Access-Control-Allow-Origin: http:&#x2F;&#x2F;www.domain-a.com</span><br></pre></td></tr></table></figure>
+
+<p>如果服务端指定了具体的域名而非“*”，那么响应首部中的 Vary 字段的值必须包含 Origin。这将告诉客户端：服务器对不同的源站返回不同的内容。</p>
+<p>接下来所说的解决方案主要就是围绕这一字段进行的。</p>
+<h2 id="Spring-中对于跨域的常见解决方案"><a href="#Spring-中对于跨域的常见解决方案" class="headerlink" title="Spring 中对于跨域的常见解决方案"></a>Spring 中对于跨域的常见解决方案</h2><p>本节介绍一下使用 Spring 中对于跨域的常见解决方案，主要分为以下几种。</p>
+<ol>
+<li>直接设置请求头</li>
+<li>@CrossOrigin 注解</li>
+<li>WebMvcConfigurer 配置</li>
+<li>使用 CorsFilter 拦截器</li>
+</ol>
+<p>这一块的知识点网上一搜一大把，这里就不展开说明了。重点回到本次的问题分析。</p>
+<h2 id="上述方案使用结束之后仍然失效？"><a href="#上述方案使用结束之后仍然失效？" class="headerlink" title="上述方案使用结束之后仍然失效？"></a>上述方案使用结束之后仍然失效？</h2><p>解决这个问题，经历了几个过程。</p>
+<p>使用 @CrossOrigin 注解，接口 1、2 请求正常，但该方案不够通用，暂时舍弃。</p>
+<p>使用 WebMvcConfigurer 配置的 addCorsMappings 方法配置接口 3 时失败，仍然出现跨域问题。</p>
+<p>查找资料发现，这有可能是<strong>客户端请求经过的先后顺序问题，当服务端接收到一个请求时，该请求会先经过过滤器，然后进入拦截器中，然后再进入 Mapping 映射中的路径所指向的资源，所以跨域配置在 mapping 上并不起作用，返回的头信息中并没有配置的跨域信息，浏览器就会报跨域异常。</strong></p>
+<p><strong>因此才会出现这种情况，当你在项目中使用了该方法配置跨域问题后，再使用自定义的拦截器时，跨域问题的相关配置就会失效，请求依然会报跨域问题的错。</strong></p>
+<p>此时我选择了最后一种方案，也即，直接使用 CorsFilter 拦截器。</p>
+<p>在配置好拦截器之后，仍然出现跨域问题，此时的我心态崩了。</p>
+<h2 id="治标-or-治本"><a href="#治标-or-治本" class="headerlink" title="治标 or 治本"></a>治标 or 治本</h2><p>后来，我意外的发现前端在调用接口时的 URL 有问题，并没有按照我给他的规则去拼接 URL，果然，在请求了正确的 URL 之后，跨域问题，随即消失了。</p>
+<p>也就是说，整个事件出现的原因是因为请求参数异常。</p>
+<p>至此，这个问题其实已经解决了，治标已经完成。</p>
+<p>只是，这时我又产生了新的疑问，为什么请求参数异常没有走到业务逻辑处理而是出现了跨域问题 🤔️</p>
+<p>让我们情景再现一下 👇</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@GetMapping(&quot;/error&quot;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ApiResult&lt;String&gt; <span class="title">errorTest</span><span class="params">(<span class="meta">@RequestParam</span> String id)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (StringUtils.isBlank(id)) &#123;</span><br><span class="line">        <span class="keyword">return</span> RestUtil.error(<span class="number">1</span>, <span class="string">&quot;参数异常&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> RestUtil.success(id);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码样例如上，请求情况如下 👇</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">fetch(<span class="string">&quot;http://www.a.com/error&quot;</span>); <span class="comment">// 出现跨域</span></span><br><span class="line">fetch(<span class="string">&quot;http://www.a.com/error?id=123&quot;</span>); <span class="comment">// 正常访问</span></span><br></pre></td></tr></table></figure>
+
+<p>经师兄提点，猜想是由于系统内部抛了异常被拦截后自动重定向到淘宝错误页，果然，在我直接使用浏览器访问上述 URL 后，果然跳转到了淘宝的错误页。</p>
+<p>而系统之所以会报异常，原因出在 <code>@RequestParam</code> 注解上，让我们看一下他的源码</p>
+<p><img src="https://cdn.ytools.xyz/uPic/HTgoIDimage-20210804232904497.png"><br>默认该参数是必传的！</p>
+<p>如果不传该参数，甚至进不去业务逻辑的错误校验，从而直接被系统捕获了，接下来就是我们刚才熟知的那一幕了。</p>
+<p>所以，其实只要设置成 <code>@RequestParam(required = false)</code>，或者不使用该注解，即可从根源上解决该问题。</p>
+<h2 id="刨根问底一下"><a href="#刨根问底一下" class="headerlink" title="刨根问底一下"></a>刨根问底一下</h2><p>其实从问题的解决角度来说，到这里已经可以了，只不过刨根问底一下，为什么请求错误了会跳到淘宝的错误页，而不是显示 tomcat 的错误页呢？</p>
+<p>在询问了师兄和查找相关资料后，我发现，是由于 tengine（阿里内部的魔改 Nginx）的 error_page 配置造成的，在 proxy_intercept_errors 配置成功后，使得在发生错误时自动重定向到淘宝错误页，所以即使在业务接口做了跨域处理，前端仍会出现跨域问题，因为这一次跨到了淘宝错误页的域。</p>
+<p>nginx 配置目录在 <code>/home/admin/cai/conf</code></p>
+<p>配置文件中并未出现重定向页面，重定向页面的配置在另一个文件中 <code>/opt/taobao/tengine/conf/services.conf</code></p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">error_page              400 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              403 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              404 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              405 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              408 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              410 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              411 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              412 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              413 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              414 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              415 http://err.taobao.com/error1.html;</span><br><span class="line">error_page              500 http://err.taobao.com/error2.html;</span><br><span class="line">error_page              501 http://err.taobao.com/error2.html;</span><br><span class="line">error_page              502 http://err.taobao.com/error2.html;</span><br><span class="line">error_page              503 http://err.taobao.com/error2.html;</span><br><span class="line">error_page              506 http://err.taobao.com/error2.html;</span><br></pre></td></tr></table></figure>
+
+<p>重新加载配置 <code>/home/admin/cai/bin/nginxctl reload</code></p>
+<p>至此，刨根问底结束。</p>
+<h2 id="总结一下解决方案"><a href="#总结一下解决方案" class="headerlink" title="总结一下解决方案"></a>总结一下解决方案</h2><p>方案 1：关闭 nginx 的 proxy_intercept_errors 选项</p>
+<blockquote>
+<p><code>proxy_intercept_errors</code>  指令后面跟  <code>on</code>  或  <code>off</code> ，分别表示 打开 或 关闭 拦截错误页功能。</p>
+</blockquote>
+<p>方案 2：避免在请求时直接产生错误，在本例中是请求参数缺失的问题</p>
+<p><code>@RequestParam</code> 注解默认是必传的，如果没有会报 400 错误，所以才会重定向到淘宝错误页。</p>
+<p>更改为 <code>@RequestParam(required = false)</code></p>
+<p>然后在接下来的业务逻辑中进行校验</p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">@GetMapping(&quot;/error&quot;)</span><br><span class="line">public ApiResult&lt;String&gt; errorTest(@RequestParam(required = false) String id) &#123;</span><br><span class="line">    if (StringUtils.isBlank(id)) &#123;</span><br><span class="line">        return RestUtil.error(1, &quot;参数异常&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    return RestUtil.success(id);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="实验验证"><a href="#实验验证" class="headerlink" title="实验验证"></a>实验验证</h2><p>有了合理的猜想后，我们需要来验证一下，到底是不是上述猜想导致的，因此需要验证一下。</p>
+<p>验证：修改 nginx 的 <code>proxy_intercept_errors</code> 配置选项，将拦截关闭</p>
+<p>预期效果：不会重定向，且出现原生的 tomcat 错误页面</p>
+<p>实验后：</p>
+<p><img src="https://cdn.ytools.xyz/uPic/Vy1Xvoimage-20210804232959598.png"></p>
+<p>控制台 fetch 时也不会出现跨域错误了</p>
+<p><img src="https://cdn.ytools.xyz/uPic/4bs0CMiShot2021-08-04%2023.23.46.png"></p>
+<p>至此，问题解决完成。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">YueYong</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.liangyueyong.cn/p/35e3.html">https://blog.liangyueyong.cn/p/35e3.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.liangyueyong.cn" target="_blank">斯是陋室</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/">问题排查</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.ytools.xyz/uPic/NYnfBucontent_SSD_Awarded.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/p/7819.html"><img class="next-cover" src="https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">想追女神？先学 Synchronized 吧</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="https://s1.ax1x.com/2020/09/08/wQQcbq.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">YueYong</div><div class="author-info__description">凡是过往，皆为序章</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">167</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">52</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YueYongDEV"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YueYongDEV" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yueyong1030@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">微信公众号「01二进制」</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E8%B5%B7%E5%9B%A0"><span class="toc-number">1.</span> <span class="toc-text">事件起因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%B7%A8%E5%9F%9F"><span class="toc-number">2.</span> <span class="toc-text">什么是跨域</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CORS-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6"><span class="toc-number">3.</span> <span class="toc-text">CORS 工作机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spring-%E4%B8%AD%E5%AF%B9%E4%BA%8E%E8%B7%A8%E5%9F%9F%E7%9A%84%E5%B8%B8%E8%A7%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">4.</span> <span class="toc-text">Spring 中对于跨域的常见解决方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8A%E8%BF%B0%E6%96%B9%E6%A1%88%E4%BD%BF%E7%94%A8%E7%BB%93%E6%9D%9F%E4%B9%8B%E5%90%8E%E4%BB%8D%E7%84%B6%E5%A4%B1%E6%95%88%EF%BC%9F"><span class="toc-number">5.</span> <span class="toc-text">上述方案使用结束之后仍然失效？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B2%BB%E6%A0%87-or-%E6%B2%BB%E6%9C%AC"><span class="toc-number">6.</span> <span class="toc-text">治标 or 治本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A8%E6%A0%B9%E9%97%AE%E5%BA%95%E4%B8%80%E4%B8%8B"><span class="toc-number">7.</span> <span class="toc-text">刨根问底一下</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E4%B8%80%E4%B8%8B%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">8.</span> <span class="toc-text">总结一下解决方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E9%AA%8C%E8%AF%81"><span class="toc-number">9.</span> <span class="toc-text">实验验证</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/p/35e3.html" title="一次跨域问题的分析"><img src="https://cdn.ytools.xyz/uPic/NYnfBucontent_SSD_Awarded.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="一次跨域问题的分析"/></a><div class="content"><a class="title" href="/p/35e3.html" title="一次跨域问题的分析">一次跨域问题的分析</a><time datetime="2021-08-04T15:53:14.366Z" title="发表于 2021-08-04 23:53:14">2021-08-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/7819.html" title="想追女神？先学 Synchronized 吧"><img src="https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="想追女神？先学 Synchronized 吧"/></a><div class="content"><a class="title" href="/p/7819.html" title="想追女神？先学 Synchronized 吧">想追女神？先学 Synchronized 吧</a><time datetime="2021-08-01T15:51:13.931Z" title="发表于 2021-08-01 23:51:13">2021-08-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/1aa6.html" title="第一次在家办公"><img src="https://cdn.ytools.xyz/uPic/4dV3e5U3649P42DT20150805182404.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="第一次在家办公"/></a><div class="content"><a class="title" href="/p/1aa6.html" title="第一次在家办公">第一次在家办公</a><time datetime="2021-07-28T17:10:34.450Z" title="发表于 2021-07-29 01:10:34">2021-07-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/d6b4.html" title="树莓派家用指北"><img src="https://cdn.ytools.xyz/uPic/Hn6wR6Raspberry_Pi_Board_Layout.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="树莓派家用指北"/></a><div class="content"><a class="title" href="/p/d6b4.html" title="树莓派家用指北">树莓派家用指北</a><time datetime="2021-07-24T17:01:31.205Z" title="发表于 2021-07-25 01:01:31">2021-07-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/c0e2.html" title="给编译器看的注释——「注解」"><img src="https://cdn.ytools.xyz/uPic/NS7lqsiShot2021-06-12%2000.58.18.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="给编译器看的注释——「注解」"/></a><div class="content"><a class="title" href="/p/c0e2.html" title="给编译器看的注释——「注解」">给编译器看的注释——「注解」</a><time datetime="2021-06-14T07:23:23.088Z" title="发表于 2021-06-14 15:23:23">2021-06-14</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2017 - 2021 By YueYong</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'U0W7ATmVTjBxWkHt96LR9Bj0-gzGzoHsz',
+      appKey: 'uko1Os2bkFSID34qVRrgjCcX',
+      placeholder: '记得留下你的昵称和邮箱....可以快速收到回复',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: true,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: {"tv_doge":"6ea59c827c414b4a2955fe79e0f6fd3dcd515e24.png","tv_親親":"a8111ad55953ef5e3be3327ef94eb4a39d535d06.png","tv_偷笑":"bb690d4107620f1c15cff29509db529a73aee261.png","tv_再見":"180129b8ea851044ce71caf55cc8ce44bd4a4fc8.png","tv_冷漠":"b9cbc755c2b3ee43be07ca13de84e5b699a3f101.png","tv_發怒":"34ba3cd204d5b05fec70ce08fa9fa0dd612409ff.png","tv_發財":"34db290afd2963723c6eb3c4560667db7253a21a.png","tv_可愛":"9e55fd9b500ac4b96613539f1ce2f9499e314ed9.png","tv_吐血":"09dd16a7aa59b77baa1155d47484409624470c77.png","tv_呆":"fe1179ebaa191569b0d31cecafe7a2cd1c951c9d.png","tv_嘔吐":"9f996894a39e282ccf5e66856af49483f81870f3.png","tv_困":"241ee304e44c0af029adceb294399391e4737ef2.png","tv_壞笑":"1f0b87f731a671079842116e0991c91c2c88645a.png","tv_大佬":"093c1e2c490161aca397afc45573c877cdead616.png","tv_大哭":"23269aeb35f99daee28dda129676f6e9ea87934f.png","tv_委屈":"d04dba7b5465779e9755d2ab6f0a897b9b33bb77.png","tv_害羞":"a37683fb5642fa3ddfc7f4e5525fd13e42a2bdb1.png","tv_尷尬":"7cfa62dafc59798a3d3fb262d421eeeff166cfa4.png","tv_微笑":"70dc5c7b56f93eb61bddba11e28fb1d18fddcd4c.png","tv_思考":"90cf159733e558137ed20aa04d09964436f618a1.png","tv_驚嚇":"0d15c7e2ee58e935adc6a7193ee042388adc22af.png"},
+      enableQQ: true,
+      path: window.location.pathname,
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>
