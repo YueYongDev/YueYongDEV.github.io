@@ -1,12 +1,12 @@
 ---
-title: 想追女神？先学 Synchronized 吧
+title: 深入浅出序列化（1）—— JDK序列化和Hessian序列化
 categories:
   - 技术科普
 tags:
-  - 其他
+  - 序列化
   - java
 cover: 'https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png'
-abbrlink: '7819'
+abbrlink: 56a6
 ---
 
 ![](https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png)
