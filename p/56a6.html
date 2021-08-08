@@ -1,0 +1,249 @@
+<!DOCTYPE html><html lang="[&quot;zh-CN&quot;,&quot;default&quot;]" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>深入浅出序列化（1）—— JDK序列化和Hessian序列化 | 斯是陋室</title><meta name="keywords" content="java,序列化"><meta name="author" content="YueYong"><meta name="copyright" content="YueYong"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="我之前在《聊一聊 RPC》中曾提过什么是序列化和反序列化，当时有说过之后要单独抽出一期来详细聊聊序列化，没想到这一拖竟然拖了一年多，现在来把这个坑补上。由于篇幅较长，本文先主要介绍两种常见的序列化方式——JDK 序列化和 Hessian 序列化。  序列化是什么（What）百度百科对于 「序列化」 的解释是：  序列化 (Serialization)是将对象的状态信息转换为可以存储或传输的形式的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入浅出序列化（1）—— JDK序列化和Hessian序列化">
+<meta property="og:url" content="https://blog.liangyueyong.cn/p/56a6.html">
+<meta property="og:site_name" content="斯是陋室">
+<meta property="og:description" content="我之前在《聊一聊 RPC》中曾提过什么是序列化和反序列化，当时有说过之后要单独抽出一期来详细聊聊序列化，没想到这一拖竟然拖了一年多，现在来把这个坑补上。由于篇幅较长，本文先主要介绍两种常见的序列化方式——JDK 序列化和 Hessian 序列化。  序列化是什么（What）百度百科对于 「序列化」 的解释是：  序列化 (Serialization)是将对象的状态信息转换为可以存储或传输的形式的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png">
+<meta property="article:published_time" content="2021-08-01T15:51:13.931Z">
+<meta property="article:modified_time" content="2021-08-08T08:39:45.129Z">
+<meta property="article:author" content="YueYong">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="序列化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.liangyueyong.cn/p/56a6"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-08-08 16:39:45'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://s1.ax1x.com/2020/09/08/wQQcbq.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">168</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">53</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">斯是陋室</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">深入浅出序列化（1）—— JDK序列化和Hessian序列化</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-08-01T15:51:13.931Z" title="发表于 2021-08-01 23:51:13">2021-08-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-08-08T08:39:45.129Z" title="更新于 2021-08-08 16:39:45">2021-08-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF%E7%A7%91%E6%99%AE/">技术科普</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/p/56a6.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/p/56a6.html" itemprop="commentCount"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><img src="https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png"></p>
+<p>我之前在<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/R8UJFu_aKjOhjKdvbhy1AQ">《聊一聊 RPC》</a>中曾提过什么是序列化和反序列化，当时有说过之后要单独抽出一期来详细聊聊序列化，没想到这一拖竟然拖了一年多，现在来把这个坑补上。由于篇幅较长，本文先主要介绍两种常见的序列化方式——JDK 序列化和 Hessian 序列化。</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7fe49e9f71434f79975b728283fa4621~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<h2 id="序列化是什么（What）"><a href="#序列化是什么（What）" class="headerlink" title="序列化是什么（What）"></a>序列化是什么（What）</h2><p>百度百科对于 <strong>「序列化」</strong> 的解释是：</p>
+<blockquote>
+<p>序列化 (Serialization)是将对象的<strong>状态信息</strong>转换为可以<strong>存储或传输</strong>的形式的过程。</p>
+</blockquote>
+<p>这么说太抽象了，举一个例子：你如果想让一个女孩子知道你喜欢她，你可以给她写情书，这样 <strong>「喜欢」</strong> 这种状态信息就变成了 <strong>「文字」</strong> 这种可以存储或传输的信息。</p>
+<p>至于怎么把“情书”送给女生就有很多种方式了，我在<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/R8UJFu_aKjOhjKdvbhy1AQ">《聊一聊 RPC》</a>中已经有写过了，感兴趣的读者们可以点击阅读。</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b2b568e10705436eb2e6ddba8c0cf94b~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>所以，简单理解序列化就是将“对象”存储的信息保存到某个“文件”中，之后再通过某种方式读取“文件”转换成对象。在 Java 中，序列化其实就是把一个 Java 对象变成二进制内容，本质上就是一个 byte[]数组。</p>
+<p>既然有序列化，那么就会有反序列化，在上文的例子中，如果女孩通过情书中的文字明白了男孩的喜欢，这就是一种反序列化。在 Java 中，将一个 byte[]数组重新变成 Java 对象就是一种反序列化。</p>
+<h2 id="为什么要序列化（Why）"><a href="#为什么要序列化（Why）" class="headerlink" title="为什么要序列化（Why）"></a>为什么要序列化（Why）</h2><p>这个时候肯定就有人会问了，直接把对象作为参数传递不就可以了吗？为什么还要多此一举把对象变成“文本”，然后再将“文本”变成对象？</p>
+<p>我们知道，Java 创建的对象都是存在于 Java 虚拟机中，也即 JVM 中，那么 JVM 又在哪里呢？</p>
+<p>JVM 是 Java 程序运行的环境，但是他同时是一个操作系统的一个应用程序，即一个进程。他的运行依赖于内存，因此 Java 中对象都是存储在内存中，准确地说是 JVM 的堆或栈内存中，可以各个线程之间进行对象传输，但是无法在进程之间进行传输。如果涉及到跨内存的数据传输（比如两台机器的传输），直接把对象作为参数传递就不可取了，这时就需要通过“网络”将数据传输。</p>
+<p>举个例子，如果没办法自己亲自把情书送到对方手上，是不是得找一个人送过去？这就是 RPC 相关的知识了。</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9664e64be4d54f36bb53409a4b8787c6~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<h2 id="怎么序列化（How）"><a href="#怎么序列化（How）" class="headerlink" title="怎么序列化（How）"></a>怎么序列化（How）</h2><p>上述内容在之前那篇文章里都有涉及，接下来才是本文的重点，在实际使用时我们究竟该怎么序列化，有哪些方式可以序列化？为什么我们在代码中很少遇到手写序列化的情况。这些都是本文要解答的内容。</p>
+<p>本文我们以 Java 为例。</p>
+<h3 id="JDK-序列化"><a href="#JDK-序列化" class="headerlink" title="JDK 序列化"></a>JDK 序列化</h3><p>作为一个成熟的编程语言，Java 本身就已经提供了序列化的方法了，因此我们也选择把他作为第一个介绍的序列化方式。</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e2dce6295ad4443289ecc59235d2f2a7~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>JDK 自带的序列化方式，使用起来非常方便，只需要序列化的类实现了<strong>Serializable</strong>接口即可，Serializable 接口没有定义任何方法和属性，所以只是起到了<strong>标识</strong>的作用，<strong>表示这个类是可以被序列化的。</strong>如果想把一个 Java 对象变为 byte[]数组，需要使用<strong>ObjectOutputStream</strong>。它负责把一个 Java 对象写入一个字节流：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">public</span> <span class="string">class</span> <span class="string">Main</span> &#123;</span><br><span class="line">    <span class="string">public</span> <span class="string">static</span> <span class="string">void</span> <span class="string">main(String</span>[] <span class="string">args)</span> <span class="string">throws</span> <span class="string">IOException</span> &#123;</span><br><span class="line">        <span class="string">ByteArrayOutputStream</span> <span class="string">buffer</span> <span class="string">=</span> <span class="string">new</span> <span class="string">ByteArrayOutputStream();</span></span><br><span class="line">        <span class="string">try</span> <span class="string">(ObjectOutputStream</span> <span class="string">output</span> <span class="string">=</span> <span class="string">new</span> <span class="string">ObjectOutputStream(buffer))</span> &#123;</span><br><span class="line">            <span class="string">//</span> <span class="string">写入int:</span></span><br><span class="line">            <span class="string">output.writeInt(12345);</span></span><br><span class="line">            <span class="string">//</span> <span class="string">写入String:</span></span><br><span class="line">            <span class="string">output.writeUTF(&quot;Hello&quot;);</span></span><br><span class="line">            <span class="string">//</span> <span class="string">写入Object:</span></span><br><span class="line">            <span class="string">output.writeObject(Double.valueOf(123.456));</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="string">System.out.println(Arrays.toString(buffer.toByteArray()));</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果没有实现 Serializable 接口而进行序列化操作就会抛出 NotSerializableException 异常</p>
+<p>上面代码输出的是如下的 Byte 数组：</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/caadbbd216514ba0921bdcb9564f63c0~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<h4 id="serialVersionUID"><a href="#serialVersionUID" class="headerlink" title="serialVersionUID"></a>serialVersionUID</h4><p>在反序列化时，JVM 需要知道所属的 class 文件，在序列化的时候 JVM 会记录 class 文件的版本号，也即 serialVersionUID 这一变量。该变量默认是由 JVM 自动生成，也可以手动定义。反序列化时 JVM 会按版本号找指定版本的 class 文件进行反序列化，如果 class 文件有版本号在序列化和反序列化时不一致就会导致反序列化失败，会抛异常提示版本号不一致，</p>
+<h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><p>JDK 序列化会把对象类的描述和所有属性的元数据都序列化为字节流，另外<strong>继承的元数据也会序列化</strong>，所以导致序列化的元素较多且字节流很大，但是由于序列化了所有信息所以相对而言更可靠。但是如果只需要序列化属性的值时就比较浪费。</p>
+<p>而且因为 Java 的序列化机制可以导致一个实例<strong>能直接从 byte[]数组创建</strong>，而不经过构造方法，因此，它存在一定的安全隐患。一个精心构造的 byte[]数组被反序列化后可以执行特定的 Java 代码，从而导致严重的安全漏洞。</p>
+<p>其次，由于这种方式是 JDK 自带，无法被多个语言通用，因此通常情况下不会使用该种方式进行序列化。</p>
+<h3 id="Hessian"><a href="#Hessian" class="headerlink" title="Hessian"></a>Hessian</h3><p>Hessian 是一种动态类型、二进制序列化和 Web 服务协议，专为面向对象的传输而设计。</p>
+<p>官方介绍 👉<a target="_blank" rel="noopener" href="http://hessian.caucho.com/doc/hessian-serialization.html">Hessian 2.0 Serialization Protocol</a></p>
+<p>和 JDK 自带的序列化方式类似，Hessian 采用的也是二进制协议，只不过 Hessian 序列化之后，字节数更小，性能更优。目前 Hessian 已经出到 2.0 版本，相较于 1.0 的 Hessian 性能更优。相较于 JDK 自带的序列化，Hessian 的设计目标更明确 👇</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c5f23e9ec11344a19ee55b9f6a122ad4~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<h4 id="序列化实现方式"><a href="#序列化实现方式" class="headerlink" title="序列化实现方式"></a>序列化实现方式</h4><p>之所以说 Hessian 序列化之后的数据字节数更小，和他的实现方式密不可分，以 int 存储整数为例，我们通过官网的说明可以发现存储逻辑如下 👇</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/54bf77d2d08e4950971d1da3246007b8~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>翻译一下就是：</p>
+<blockquote>
+<p>一个 32 位有符号的整数。一个整数由八位数 x49(‘I’)表示，后面是整数的 4 个八位数，以高位优先（big-endian）顺序排列。</p>
+</blockquote>
+<p>简单来说就是，如果要存储一个数据为 1 的整数，Hessian 会存储成<code>I 1</code>这样的形式。</p>
+<p>存对象也很简单，如下：</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/84b5e513fce64432940d53f241169aa0~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>对于 Hessian 支持的数据结构，官网均有序列化的语法，详情可参考 👉<a target="_blank" rel="noopener" href="http://hessian.caucho.com/doc/hessian-serialization.html#anchor4">Serialization</a></p>
+<p>而且，和 JDK 自带序列化不同的是，如果一个对象之前出现过，hessian 会直接插入一个 R index 这样的块来表示一个引用位置，从而省去再次序列化和反序列化的时间。</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c7c7164aa5a441a68b3666116687528f~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>也正是因为如此，Hessian 的序列化速度相较于 JDK 序列化才更快。只不过 Java 序列化会把要序列化的对象类的元数据和业务数据全部序列化从字节流，并且会保留完整的继承关系，因此相较于 Hessian 序列化更加可靠。</p>
+<p>不过相较于 JDK 的序列化，Hessian 另一个优势在于，这是一个跨语言的序列化方式，这意味着序列化后的数据可以被其他语言使用，兼容性更好。</p>
+<h4 id="不服跑个分？"><a href="#不服跑个分？" class="headerlink" title="不服跑个分？"></a>不服跑个分？</h4><p>空口无凭，我们以一个小 demo 来测试一下：</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/1d8ac85be211445eab3202d0eaa6eefd~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>使用之前记得先引入依赖哦</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.caucho/hessian --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.caucho<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hessian<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.0.65<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>运行的结果也和我们预想的一样：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">hessian序列化长度：47</span><br><span class="line">jdk序列化长度：99</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过上文的介绍，想必你也了解了 JDK 自带序列化方式和 Hessian 序列化之间的一些区别了，JDK 序列化选择将所有的信息保存下来，因此可靠性更好。与此同时，由于采取了不同的序列化方案，Hessian 在体积和速度上相较于 JDK 序列化更优秀，且由于 Hessian 设计之初就考虑到跨语言的需求因此在兼容性方面也更胜一筹。</p>
+<p>之后我们将会介绍其他的一些序列化协议，如果你觉得本文对你有所帮助，不妨点赞关注支持一下～</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">YueYong</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.liangyueyong.cn/p/56a6.html">https://blog.liangyueyong.cn/p/56a6.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.liangyueyong.cn" target="_blank">斯是陋室</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java/">java</a><a class="post-meta__tags" href="/tags/%E5%BA%8F%E5%88%97%E5%8C%96/">序列化</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/p/35e3.html"><img class="prev-cover" src="https://cdn.ytools.xyz/uPic/NYnfBucontent_SSD_Awarded.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">一次跨域问题的分析</div></div></a></div><div class="next-post pull-right"><a href="/p/1aa6.html"><img class="next-cover" src="https://cdn.ytools.xyz/uPic/4dV3e5U3649P42DT20150805182404.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">第一次在家办公</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/p/10d8.html" title="深入浅出序列化（2）——Kryo序列化"><img class="cover" src="https://tva1.sinaimg.cn/large/008i3skNly1gt8g21vixjj309f040glp.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-08-08</div><div class="title">深入浅出序列化（2）——Kryo序列化</div></div></a></div><div><a href="/p/dff4.html" title="DO,VO,DTO 你知道吗？"><img class="cover" src="https://tva1.sinaimg.cn/large/007S8ZIlgy1ggwloquallj30p00anac3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-10</div><div class="title">DO,VO,DTO 你知道吗？</div></div></a></div><div><a href="/p/7819.html" title="想追女神？先学 Synchronized 吧"><img class="cover" src="https://tva1.sinaimg.cn/large/007S8ZIlgy1gitqh5kzgyj30v00cwdza.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-10</div><div class="title">想追女神？先学 Synchronized 吧</div></div></a></div><div><a href="/p/1b55.html" title="为什么不在 for 循环里捕获异常？"><img class="cover" src="https://tva1.sinaimg.cn/large/007S8ZIlly1gi9reea26bj30kq08twgh.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-10</div><div class="title">为什么不在 for 循环里捕获异常？</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="https://s1.ax1x.com/2020/09/08/wQQcbq.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">YueYong</div><div class="author-info__description">凡是过往，皆为序章</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">168</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">53</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YueYongDEV"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YueYongDEV" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yueyong1030@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">微信公众号「01二进制」</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%88What%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">序列化是什么（What）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%88Why%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">为什么要序列化（Why）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%88How%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">怎么序列化（How）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JDK-%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">3.1.</span> <span class="toc-text">JDK 序列化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#serialVersionUID"><span class="toc-number">3.1.1.</span> <span class="toc-text">serialVersionUID</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%B9%E7%82%B9"><span class="toc-number">3.1.2.</span> <span class="toc-text">特点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hessian"><span class="toc-number">3.2.</span> <span class="toc-text">Hessian</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F"><span class="toc-number">3.2.1.</span> <span class="toc-text">序列化实现方式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E6%9C%8D%E8%B7%91%E4%B8%AA%E5%88%86%EF%BC%9F"><span class="toc-number">3.2.2.</span> <span class="toc-text">不服跑个分？</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/p/10d8.html" title="深入浅出序列化（2）——Kryo序列化"><img src="https://tva1.sinaimg.cn/large/008i3skNly1gt8g21vixjj309f040glp.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="深入浅出序列化（2）——Kryo序列化"/></a><div class="content"><a class="title" href="/p/10d8.html" title="深入浅出序列化（2）——Kryo序列化">深入浅出序列化（2）——Kryo序列化</a><time datetime="2021-08-08T08:37:50.806Z" title="发表于 2021-08-08 16:37:50">2021-08-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/35e3.html" title="一次跨域问题的分析"><img src="https://cdn.ytools.xyz/uPic/NYnfBucontent_SSD_Awarded.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="一次跨域问题的分析"/></a><div class="content"><a class="title" href="/p/35e3.html" title="一次跨域问题的分析">一次跨域问题的分析</a><time datetime="2021-08-04T15:53:14.366Z" title="发表于 2021-08-04 23:53:14">2021-08-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/56a6.html" title="深入浅出序列化（1）—— JDK序列化和Hessian序列化"><img src="https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="深入浅出序列化（1）—— JDK序列化和Hessian序列化"/></a><div class="content"><a class="title" href="/p/56a6.html" title="深入浅出序列化（1）—— JDK序列化和Hessian序列化">深入浅出序列化（1）—— JDK序列化和Hessian序列化</a><time datetime="2021-08-01T15:51:13.931Z" title="发表于 2021-08-01 23:51:13">2021-08-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/1aa6.html" title="第一次在家办公"><img src="https://cdn.ytools.xyz/uPic/4dV3e5U3649P42DT20150805182404.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="第一次在家办公"/></a><div class="content"><a class="title" href="/p/1aa6.html" title="第一次在家办公">第一次在家办公</a><time datetime="2021-07-28T17:10:34.450Z" title="发表于 2021-07-29 01:10:34">2021-07-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/d6b4.html" title="树莓派家用指北"><img src="https://cdn.ytools.xyz/uPic/Hn6wR6Raspberry_Pi_Board_Layout.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="树莓派家用指北"/></a><div class="content"><a class="title" href="/p/d6b4.html" title="树莓派家用指北">树莓派家用指北</a><time datetime="2021-07-24T17:01:31.205Z" title="发表于 2021-07-25 01:01:31">2021-07-25</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2017 - 2021 By YueYong</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'U0W7ATmVTjBxWkHt96LR9Bj0-gzGzoHsz',
+      appKey: 'uko1Os2bkFSID34qVRrgjCcX',
+      placeholder: '记得留下你的昵称和邮箱....可以快速收到回复',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: true,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: {"tv_doge":"6ea59c827c414b4a2955fe79e0f6fd3dcd515e24.png","tv_親親":"a8111ad55953ef5e3be3327ef94eb4a39d535d06.png","tv_偷笑":"bb690d4107620f1c15cff29509db529a73aee261.png","tv_再見":"180129b8ea851044ce71caf55cc8ce44bd4a4fc8.png","tv_冷漠":"b9cbc755c2b3ee43be07ca13de84e5b699a3f101.png","tv_發怒":"34ba3cd204d5b05fec70ce08fa9fa0dd612409ff.png","tv_發財":"34db290afd2963723c6eb3c4560667db7253a21a.png","tv_可愛":"9e55fd9b500ac4b96613539f1ce2f9499e314ed9.png","tv_吐血":"09dd16a7aa59b77baa1155d47484409624470c77.png","tv_呆":"fe1179ebaa191569b0d31cecafe7a2cd1c951c9d.png","tv_嘔吐":"9f996894a39e282ccf5e66856af49483f81870f3.png","tv_困":"241ee304e44c0af029adceb294399391e4737ef2.png","tv_壞笑":"1f0b87f731a671079842116e0991c91c2c88645a.png","tv_大佬":"093c1e2c490161aca397afc45573c877cdead616.png","tv_大哭":"23269aeb35f99daee28dda129676f6e9ea87934f.png","tv_委屈":"d04dba7b5465779e9755d2ab6f0a897b9b33bb77.png","tv_害羞":"a37683fb5642fa3ddfc7f4e5525fd13e42a2bdb1.png","tv_尷尬":"7cfa62dafc59798a3d3fb262d421eeeff166cfa4.png","tv_微笑":"70dc5c7b56f93eb61bddba11e28fb1d18fddcd4c.png","tv_思考":"90cf159733e558137ed20aa04d09964436f618a1.png","tv_驚嚇":"0d15c7e2ee58e935adc6a7193ee042388adc22af.png"},
+      enableQQ: true,
+      path: window.location.pathname,
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>
