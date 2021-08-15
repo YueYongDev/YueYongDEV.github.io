@@ -1,0 +1,263 @@
+<!DOCTYPE html><html lang="[&quot;zh-CN&quot;,&quot;default&quot;]" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>【译】通过 Redis 构建一个响应式架构 | 斯是陋室</title><meta name="keywords" content="掘金翻译计划,Redis"><meta name="author" content="YueYong"><meta name="copyright" content="YueYong"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="Redis 是我遇到过的最强大、最通用的技术之一。遗憾的是，大多数人都只是将其作为一个优秀的缓存解决方案来使用。 为此，我们需要去改变这个现状。 我特别想通过本文告诉你，如何构建一个以 Redis 为核心的响应式架构。尤其是当你因为一些其它的需求（比如高性能的缓存）已经将 Redis 作为你整个应用基础设施的一部分时，这会是一个巨大的优势。 我在本文所描述的内容，你可以按照自己的想法采取各种手段">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【译】通过 Redis 构建一个响应式架构">
+<meta property="og:url" content="https://blog.liangyueyong.cn/p/e8f2.html">
+<meta property="og:site_name" content="斯是陋室">
+<meta property="og:description" content="Redis 是我遇到过的最强大、最通用的技术之一。遗憾的是，大多数人都只是将其作为一个优秀的缓存解决方案来使用。 为此，我们需要去改变这个现状。 我特别想通过本文告诉你，如何构建一个以 Redis 为核心的响应式架构。尤其是当你因为一些其它的需求（比如高性能的缓存）已经将 Redis 作为你整个应用基础设施的一部分时，这会是一个巨大的优势。 我在本文所描述的内容，你可以按照自己的想法采取各种手段">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.ytools.xyz/uPic/nHfZvj1*6lsjEFol6Hj11gaifU2feQ.jpeg">
+<meta property="article:published_time" content="2021-08-15T14:37:46.010Z">
+<meta property="article:modified_time" content="2021-08-15T14:38:30.252Z">
+<meta property="article:author" content="YueYong">
+<meta property="article:tag" content="掘金翻译计划">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.ytools.xyz/uPic/nHfZvj1*6lsjEFol6Hj11gaifU2feQ.jpeg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.liangyueyong.cn/p/e8f2"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-08-15 22:38:30'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://s1.ax1x.com/2020/09/08/wQQcbq.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">169</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">54</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://cdn.ytools.xyz/uPic/nHfZvj1*6lsjEFol6Hj11gaifU2feQ.jpeg)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">斯是陋室</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">【译】通过 Redis 构建一个响应式架构</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-08-15T14:37:46.010Z" title="发表于 2021-08-15 22:37:46">2021-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-08-15T14:38:30.252Z" title="更新于 2021-08-15 22:38:30">2021-08-15</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%A4%96%E6%96%87%E7%BF%BB%E8%AF%91/">外文翻译</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/p/e8f2.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/p/e8f2.html" itemprop="commentCount"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><img src="https://cdn.ytools.xyz/uPic/nHfZvj1*6lsjEFol6Hj11gaifU2feQ.jpeg"></p>
+<p>Redis 是我遇到过的最强大、最通用的技术之一。遗憾的是，大多数人都只是将其作为一个优秀的缓存解决方案来使用。</p>
+<p>为此，我们需要去改变这个现状。</p>
+<p>我特别想通过本文告诉你，如何构建一个以 Redis 为核心的响应式架构。尤其是当你因为一些其它的需求（比如高性能的缓存）已经将 Redis 作为你整个应用基础设施的一部分时，这会是一个巨大的优势。</p>
+<p>我在本文所描述的内容，你可以按照自己的想法采取各种手段来实现，说实话，在这一点上任何选择都是有效的。出于个人观点，我更倾向于使用 Node.js，但这也只是我自己的想法，你可以选择最适合你的方案。</p>
+<h2 id="构建一个响应式架构"><a href="#构建一个响应式架构" class="headerlink" title="构建一个响应式架构"></a>构建一个响应式架构</h2><p>首先要了解的问题是什么是响应式架构，以及为什么我们要构建一个响应式架构而不是采用其他更传统的方案？</p>
+<p>简单来说，一个响应式架构就是让每一个逻辑都在满足所有预设条件的情况下被执行 —— 我想我应该给 “简单” 这个词加一个引号。</p>
+<p>换个其他的说法：为了让你的逻辑在某个特定事件发生后被触发，通常会有两种实现方案：</p>
+<ul>
+<li><p>定期检查某种标志，直到它被打开，这意味着事件发生。</p>
+</li>
+<li><p>停下来等待，直到某个东西通知你的服务，事件被触发。</p>
+</li>
+</ul>
+<p>第二个是面向对象编程中观察者模式的关键。被观察的对象让所有订阅其内部状态的人知道它更新了。</p>
+<p>我们在这里要做的是，将这种来源于面向对象（OOP）的设计模式推导到架构级的设计中。因此，这里我所谈及的不是程序内的一些逻辑，而是架构级别的，一旦触发响应条件，就运行某项服务。</p>
+<p>这是分配和扩展平台最有效的方式，原因在于：</p>
+<ul>
+<li><p>你不必浪费时间和流量去轮询一个特定数据源的标志（或任何你觉得应该轮询的东西）。此外，如果你使用的基础设施是按流量付费的，不必要的轮询可能会产生额外的费用，在目标服务上增加不需要的工作，如果在你的代码等待轮询的时间里发生了多个事件，你最终可能还需要聚合这些事件。</p>
+</li>
+<li><p>你可以通过增加新的服务，并行工作，并以尽可能快的速度捕捉事件，来增强服务的处理能力。</p>
+</li>
+<li><p>平台更加稳定。通过响应式工作，你可以确保你的服务以最佳速度运行，而不必担心由于客户的数据过载而崩溃。</p>
+</li>
+</ul>
+<p>响应式架构本质上是异步的，所以任何试图与之交流的客户端应用，也需要适应相同的响应范式。你可以通过 HTTP 得到一个来自外部的 REST API，但是你得到的响应结果可能并不是你想要的答案。例如，你可能会得到一个 ”200 OK“ 的响应，意味着你的请求已经收到。为了让你的应用程序得到实际的结果，它必须订阅包含这种响应的特定事件。</p>
+<p>请记住这一点，否则，你可能会花很长时间来调试为什么没有得到你想要的响应结果。</p>
+<h2 id="接下来我们需要什么？"><a href="#接下来我们需要什么？" class="headerlink" title="接下来我们需要什么？"></a>接下来我们需要什么？</h2><p>既然如此，我们需要什么来使我们的平台/架构成为一个响应式的平台/架构呢？可以肯定的是，这不是 ReactJS。我们需要一个消息代理，一个能在多个服务之间集中分配消息的东西。</p>
+<p>对于可以充当代理的东西，我们需要确保我们的代码知道它在哪里，以及他所需要的事件类型，以此来确保订阅到某些事件。</p>
+<p>在此之后，一个通知将被发送到我们的服务，同时触发我们的业务逻辑。</p>
+<p>听起来是不是很容易？那是因为它本就如此！</p>
+<h3 id="那么-Redis-是如何发挥作用的呢？"><a href="#那么-Redis-是如何发挥作用的呢？" class="headerlink" title="那么 Redis 是如何发挥作用的呢？"></a>那么 Redis 是如何发挥作用的呢？</h3><p>Redis 不仅仅是一个存储在内存上的键值对存储引擎，事实上，它有三个我喜欢的特性，也正因如此，我才愿意使用 Redis 来搭建基于不同预期行为的响应式架构。</p>
+<p>这三个特点分别是：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://redis.io/topics/pubsub">发布/订阅</a>。Redis 内部维护着一个消息队列，它允许我们发送消息，并将它们分发到每个订阅的进程。这是一种“发后即忘”类型的约定，这意味着如果没有在线的监听器，那么消息就会丢失。所以在使用时要考虑到这一点。</li>
+<li>键空间通知。这可能是 Redis 中我最喜欢的功能。他们是由 Redis 自己创建的事件，并分发给每个决定订阅它们的进程。这个功能和键空间的变化有关，也即存储在 Redis 里面的数据发生的任何变化。例如，当你删除或更新一个键时，或者当它的 TTL 计数器达到 0 自动删除时。这使你能够设定有时间限制的事件。比如说，你是否曾经需要在 “某事 “发生 3 天后触发一点逻辑？通过这种方法就可以实现。</li>
+<li>Redis 流。这是 Redis 数据类型的混合物，混合了键空间通知和发布/订阅，所有这些都放在一起，工作得很好。Redis 流试图模仿 <code>tail -f</code> 命令在你的终端上的行为。如果你从来没有见过这个命令，说明这是一个*nix 命令，它向你显示一个文件的最后一行，并保持监听该文件的变化，每新增一行时，终端会立即显示。Redis 流也是同样的道理。如果使用得当，那么将会是一个强有力的工具。<a target="_blank" rel="noopener" href="https://blog.logrocket.com/why-are-we-getting-streams-in-redis-8c36498aaac5/">你可以阅读此处了解更多</a>。</li>
+</ul>
+<p>所有这些特性都使得你可以以各种方式与你的业务逻辑进行适配，根据你所期望的行为类型，解决其中的一个或全部。</p>
+<p>让我们快速看一些例子，以便知道该怎么使用以及在什么时候使用。</p>
+<h2 id="经典案例，基于事件的消息"><a href="#经典案例，基于事件的消息" class="headerlink" title="经典案例，基于事件的消息"></a>经典案例，基于事件的消息</h2><p>最简单的例子是，每个微服务都在等待发生什么事情。要触发的事件，该事件可能来自外部，即系统的用户或客户端。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/ykLP0M1*i3IDQzuBBDTNyI6Dp3YWlQ.png"></p>
+<p>如上图所示，可以把中央的红色管看作是 Redis 的发布/订阅流程或阻塞队列，这是一个更可靠的发布/订阅模式的自定义实现。</p>
+<p>整个过程从步骤 1 开始，由 <code>Client App</code> 提交请求，到步骤 9 由  <code>Client App</code>  得到响应通知结束。其余的呢？我不关心，客户端 App 也不需要关心。</p>
+<p>这种模式的好处之一就是使得架构对客户端来说成为一个黑盒。一个请求可以触发数百个事件，也可能只触发一个，但是行为都是一样的：一旦准备好响应，它就会被传递给客户端。而不是让客户端知道需要多长时间或者需要多久检查一次是否准备好。这些在这里都不重要。</p>
+<p>记住以下几点：</p>
+<ul>
+<li>一条信息由其订阅者发布到一个“频道”。如果你想发布不同类型的主题，建议你创建多个不同的频道。另外，如果你需要额外的粒度来区分哪个消费者必须负责处理某个特定的消息，那么这些细节就需要成为消息的一部分。这是因为一个通道的所有订阅者都会得到相同的消息，所以如果有多个进程侦听和获取相同的消息，那么最终可能会重新执行相同的操作。例如，在 Redis 中可以用消息的 ID 作为一个标志，以确保第一个创建它的进程将负责处理该事件，而其他进程则可以忽略它。这是一个可靠的方法，因为在 Redis 中设置一个键是一个原子过程，所以并发不会在其中起作用。</li>
+<li>如果没有订阅者监听某个特定的频道，则发布的消息将丢失。如果你使用发布/订阅模式，就会出现这种情况，因为它是在“发后即忘”机制下工作的。如果你想确保你的信息在被处理之前一直在那里，你可以使用“阻塞队列”的方式。这种解决方案包括直接在 Redis 的键空间上创建一个列表（即一个正常的值列表），并让进程订阅键空间通知。这样他们就可以决定如何处理插入的数据（比如忽略、处理、删除等）。</li>
+<li>如果你要发送一个复杂的消息，例如 JSON，那么它需要被序列化。这是因为对于阻塞队列和发布/订阅来说，你能发送的唯一东西是一个字符串。不过如果你想不经过序列化就发送复杂的数据类型，他们允许你使用 Redis Streams。当然，这里的限制是，你只能使用 Redis 自带的数据类型而不是那些编程语言的数据类型。</li>
+</ul>
+<p>接下来让我们来看看，如果你的事件是基于时间触发的，会发生什么。</p>
+<h2 id="基于时间触发"><a href="#基于时间触发" class="headerlink" title="基于时间触发"></a>基于时间触发</h2><p>响应式架构的另一个常见行为是，能够在预定义的时间过后触发某些事件。例如：在发现数据问题 10 分钟后触发警报。或等待 30 分钟后触发物联网设备停止发送数据的警报。</p>
+<p>这些行为通常与现实世界的限制有关，需要一些时间来解决，或者甚至可以通过“等待一点时间”并重新启动倒计时来解决（就像物联网设备的连接不可靠）。</p>
+<p>对于这种情况，整体架构保持不变，唯一的区别是中央通信枢纽必须使用<a target="_blank" rel="noopener" href="https://redis.io/topics/notifications">来自 Redis 的键空间通知</a>。</p>
+<p>你看，这里就有两个关于 Redis 的主要特点，你需要了解一下：</p>
+<ol>
+<li>当你设置一个键值对时，你可以选择定义一个 TTL（生存时间），单位是秒。这就变成了一个倒计时，一旦达到 0，这个键就会自动销毁。</li>
+<li>当你订阅一个键空间时（这也适用于 pub/sub，但我们在这里不使用），你可以使用一个模式进行订阅。换句话说，你可以订阅 “last_connection_time_of_device100002” 这个键的事件，而不是订阅 “last_connection_time_of_device”。然后，每一个创建的、符合该模式的键都会在它发生变化时通知你。</li>
+</ol>
+<p>考虑到这两点，你可以创建订阅这些特定键的服务，并在它们被删除后做出反应（即事件被触发时）。同时，生产者不断地更新键，这也重置了 TTL 计时器。因此，如果你要追踪一个设备最后一次发送心跳的时间，你可以像我上面展示的那样，为每个设备准备一个密钥，并且在每次收到新的心跳时不断更新这个密钥。一旦 TTL 过了，就意味着你在配置的时间内没有收到新的心跳。你的订阅进程将只收到密钥名称，所以如果你只需要设备的 ID，你可以像我展示的那样构造你的密钥，并解析名称以捕获所需的信息。</p>
+<h3 id="影子键技术"><a href="#影子键技术" class="headerlink" title="影子键技术"></a>影子键技术</h3><p>另一方面，如果你在该键中保存了一个复杂的结构（如果你需要这么做的话），你将不得不改变这种方法。这是因为当 TTL 过期时，键就会被删除，里面的数据也会被删除，所以你无法获取到它。这时，你可以使用一种叫做“影子键”的技术来代替。</p>
+<p>影子键，本质上是一个用来触发事件的键，但它实际上是对包含你所需数据的实际密钥的影子。所以回到我们的例子，考虑生产者每次收到心跳时都会更新 2 个键：</p>
+<ul>
+<li>“last_connection_time_of_device100002” 是最后一次从设备收到有效载荷的 unix 时间戳。</li>
+<li>“device_data_id100002” 是与设备的额外信息。</li>
+</ul>
+<p>在这两个 key 中，只有第一个有 TTL，第二个没有。因此，当你收到过期通知时，你将从过期的 key 中获取 ID（last_connection_time_of_device100002），并使用它来读取第二个 key 的内容。然后，如果有必要的话，你可以删除这个密钥，或者把它留在那里，这取决于你的使用情况。</p>
+<p>这里唯一需要考虑的是，如果你把 Redis 配置为集群模式，键空间的通知不会在整个集群中广播。这意味着，你必须确保你的消费者连接到每个节点。通知如果没有人接收就会丢失，这也是这项技术的唯一缺点，但是在你花费数天时间去调试你的异步逻辑前，了解这一点对你来说会有很大帮助（我是过来人）。</p>
+<hr>
+<p>正如你所看到的，这两种情况下的复杂性都被降低了 —— 我们只需要确保已经订阅了正确的事件或频道。如果你试图用一个普通的 SQL 数据库来做这件事，你必须通过代码实现非常复杂的逻辑，以便有效地确定何时有新的数据进入，或何时有一条信息被删除。</p>
+<p>相反，刚才所提的所有复杂性都被 Redis 抽象化了，你唯一需要担心的，就是编写好你的业务逻辑。对我来说，这就是最重要的事情。</p>
+<p>你是否将 Redis 用于缓存之外的其他场景？在评论区与其他人分享你的经验，我很想知道你们是如何使用 Redis 的。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">YueYong</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.liangyueyong.cn/p/e8f2.html">https://blog.liangyueyong.cn/p/e8f2.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.liangyueyong.cn" target="_blank">斯是陋室</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%8E%98%E9%87%91%E7%BF%BB%E8%AF%91%E8%AE%A1%E5%88%92/">掘金翻译计划</a><a class="post-meta__tags" href="/tags/Redis/">Redis</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.ytools.xyz/uPic/nHfZvj1*6lsjEFol6Hj11gaifU2feQ.jpeg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/p/10d8.html"><img class="next-cover" src="https://tva1.sinaimg.cn/large/008i3skNly1gt8g21vixjj309f040glp.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">深入浅出序列化（2）——Kryo序列化</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/p/cbb1.html" title="【译】人工智能何以留存"><img class="cover" src="https://user-gold-cdn.xitu.io/2019/8/8/16c7123a0e654fc8?w=1280&h=720&f=png&s=1025371" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-10</div><div class="title">【译】人工智能何以留存</div></div></a></div><div><a href="/p/f628.html" title="【译】13 个你应该选择/考虑使用 Flutter 的理由"><img class="cover" src="https://user-gold-cdn.xitu.io/2019/1/29/16897b9ec5be1179?w=800&h=304&f=png&s=35970" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-10</div><div class="title">【译】13 个你应该选择/考虑使用 Flutter 的理由</div></div></a></div><div><a href="/p/16e3.html" title="【译】Flutter 系列入门教程五： 网格"><img class="cover" src="https://user-gold-cdn.xitu.io/2018/8/7/165127b80ba17804?w=600&h=338&f=png&s=167924" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-10</div><div class="title">【译】Flutter 系列入门教程五： 网格</div></div></a></div><div><a href="/p/3422.html" title="【译】Javascript中的call(), apply() 和 bind()"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-10</div><div class="title">【译】Javascript中的call(), apply() 和 bind()</div></div></a></div><div><a href="/p/4e00.html" title="【译】JetPack Compose for Desktop 初体验"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-10</div><div class="title">【译】JetPack Compose for Desktop 初体验</div></div></a></div><div><a href="/p/1daa.html" title="【译】Post-training 量化"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-10</div><div class="title">【译】Post-training 量化</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="https://s1.ax1x.com/2020/09/08/wQQcbq.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">YueYong</div><div class="author-info__description">凡是过往，皆为序章</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">169</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">54</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YueYongDEV"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YueYongDEV" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yueyong1030@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">微信公众号「01二进制」</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E5%93%8D%E5%BA%94%E5%BC%8F%E6%9E%B6%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text">构建一个响应式架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E4%B8%8B%E6%9D%A5%E6%88%91%E4%BB%AC%E9%9C%80%E8%A6%81%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">2.</span> <span class="toc-text">接下来我们需要什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%82%A3%E4%B9%88-Redis-%E6%98%AF%E5%A6%82%E4%BD%95%E5%8F%91%E6%8C%A5%E4%BD%9C%E7%94%A8%E7%9A%84%E5%91%A2%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">那么 Redis 是如何发挥作用的呢？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%8F%E5%85%B8%E6%A1%88%E4%BE%8B%EF%BC%8C%E5%9F%BA%E4%BA%8E%E4%BA%8B%E4%BB%B6%E7%9A%84%E6%B6%88%E6%81%AF"><span class="toc-number">3.</span> <span class="toc-text">经典案例，基于事件的消息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E6%97%B6%E9%97%B4%E8%A7%A6%E5%8F%91"><span class="toc-number">4.</span> <span class="toc-text">基于时间触发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%B1%E5%AD%90%E9%94%AE%E6%8A%80%E6%9C%AF"><span class="toc-number">4.1.</span> <span class="toc-text">影子键技术</span></a></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/p/e8f2.html" title="【译】通过 Redis 构建一个响应式架构"><img src="https://cdn.ytools.xyz/uPic/nHfZvj1*6lsjEFol6Hj11gaifU2feQ.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="【译】通过 Redis 构建一个响应式架构"/></a><div class="content"><a class="title" href="/p/e8f2.html" title="【译】通过 Redis 构建一个响应式架构">【译】通过 Redis 构建一个响应式架构</a><time datetime="2021-08-15T14:37:46.010Z" title="发表于 2021-08-15 22:37:46">2021-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/10d8.html" title="深入浅出序列化（2）——Kryo序列化"><img src="https://tva1.sinaimg.cn/large/008i3skNly1gt8g21vixjj309f040glp.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="深入浅出序列化（2）——Kryo序列化"/></a><div class="content"><a class="title" href="/p/10d8.html" title="深入浅出序列化（2）——Kryo序列化">深入浅出序列化（2）——Kryo序列化</a><time datetime="2021-08-08T08:37:50.806Z" title="发表于 2021-08-08 16:37:50">2021-08-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/35e3.html" title="一次跨域问题的分析"><img src="https://cdn.ytools.xyz/uPic/NYnfBucontent_SSD_Awarded.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="一次跨域问题的分析"/></a><div class="content"><a class="title" href="/p/35e3.html" title="一次跨域问题的分析">一次跨域问题的分析</a><time datetime="2021-08-04T15:53:14.366Z" title="发表于 2021-08-04 23:53:14">2021-08-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/56a6.html" title="深入浅出序列化（1）—— JDK序列化和Hessian序列化"><img src="https://cdn.ytools.xyz/uPic/sQ7UHdiShot2021-08-01%2022.55.13.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="深入浅出序列化（1）—— JDK序列化和Hessian序列化"/></a><div class="content"><a class="title" href="/p/56a6.html" title="深入浅出序列化（1）—— JDK序列化和Hessian序列化">深入浅出序列化（1）—— JDK序列化和Hessian序列化</a><time datetime="2021-08-01T15:51:13.931Z" title="发表于 2021-08-01 23:51:13">2021-08-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/1aa6.html" title="第一次在家办公"><img src="https://cdn.ytools.xyz/uPic/4dV3e5U3649P42DT20150805182404.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="第一次在家办公"/></a><div class="content"><a class="title" href="/p/1aa6.html" title="第一次在家办公">第一次在家办公</a><time datetime="2021-07-28T17:10:34.450Z" title="发表于 2021-07-29 01:10:34">2021-07-29</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2017 - 2021 By YueYong</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'U0W7ATmVTjBxWkHt96LR9Bj0-gzGzoHsz',
+      appKey: 'uko1Os2bkFSID34qVRrgjCcX',
+      placeholder: '记得留下你的昵称和邮箱....可以快速收到回复',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: true,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: {"tv_doge":"6ea59c827c414b4a2955fe79e0f6fd3dcd515e24.png","tv_親親":"a8111ad55953ef5e3be3327ef94eb4a39d535d06.png","tv_偷笑":"bb690d4107620f1c15cff29509db529a73aee261.png","tv_再見":"180129b8ea851044ce71caf55cc8ce44bd4a4fc8.png","tv_冷漠":"b9cbc755c2b3ee43be07ca13de84e5b699a3f101.png","tv_發怒":"34ba3cd204d5b05fec70ce08fa9fa0dd612409ff.png","tv_發財":"34db290afd2963723c6eb3c4560667db7253a21a.png","tv_可愛":"9e55fd9b500ac4b96613539f1ce2f9499e314ed9.png","tv_吐血":"09dd16a7aa59b77baa1155d47484409624470c77.png","tv_呆":"fe1179ebaa191569b0d31cecafe7a2cd1c951c9d.png","tv_嘔吐":"9f996894a39e282ccf5e66856af49483f81870f3.png","tv_困":"241ee304e44c0af029adceb294399391e4737ef2.png","tv_壞笑":"1f0b87f731a671079842116e0991c91c2c88645a.png","tv_大佬":"093c1e2c490161aca397afc45573c877cdead616.png","tv_大哭":"23269aeb35f99daee28dda129676f6e9ea87934f.png","tv_委屈":"d04dba7b5465779e9755d2ab6f0a897b9b33bb77.png","tv_害羞":"a37683fb5642fa3ddfc7f4e5525fd13e42a2bdb1.png","tv_尷尬":"7cfa62dafc59798a3d3fb262d421eeeff166cfa4.png","tv_微笑":"70dc5c7b56f93eb61bddba11e28fb1d18fddcd4c.png","tv_思考":"90cf159733e558137ed20aa04d09964436f618a1.png","tv_驚嚇":"0d15c7e2ee58e935adc6a7193ee042388adc22af.png"},
+      enableQQ: true,
+      path: window.location.pathname,
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>
