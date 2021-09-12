@@ -1,0 +1,222 @@
+<!DOCTYPE html><html lang="[&quot;zh-CN&quot;,&quot;default&quot;]" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>对 Node 作为系统架构中间层的一些想法 | 斯是陋室</title><meta name="keywords" content="前后端分离"><meta name="author" content="YueYong"><meta name="copyright" content="YueYong"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="Web 发展三部曲青铜时代在互联网诞生之初，网页还只是一个承载静态信息的载具，只能显示一些纯静态的文本和图片。这种静态页面不能读取后台数据库中的数据，是一个完全封闭的生态，我们姑且称这是 Web 发展的“青铜时代”。  白银时代而为了使 Web 更加充满活力，开发者们一次又一次的对动态网页这一高地发起进攻，主要目标是允许网络开发人员快速编写动态页面。这一个阶段，以 PHP、JSP、ASP.NET">
+<meta property="og:type" content="article">
+<meta property="og:title" content="对 Node 作为系统架构中间层的一些想法">
+<meta property="og:url" content="https://blog.liangyueyong.cn/p/ddc0.html">
+<meta property="og:site_name" content="斯是陋室">
+<meta property="og:description" content="Web 发展三部曲青铜时代在互联网诞生之初，网页还只是一个承载静态信息的载具，只能显示一些纯静态的文本和图片。这种静态页面不能读取后台数据库中的数据，是一个完全封闭的生态，我们姑且称这是 Web 发展的“青铜时代”。  白银时代而为了使 Web 更加充满活力，开发者们一次又一次的对动态网页这一高地发起进攻，主要目标是允许网络开发人员快速编写动态页面。这一个阶段，以 PHP、JSP、ASP.NET">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.ytools.xyz/uPic/hCkxpMdesert-6215514_1920.jpg">
+<meta property="article:published_time" content="2021-09-12T13:18:05.144Z">
+<meta property="article:modified_time" content="2021-09-12T13:19:08.051Z">
+<meta property="article:author" content="YueYong">
+<meta property="article:tag" content="前后端分离">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.ytools.xyz/uPic/hCkxpMdesert-6215514_1920.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.liangyueyong.cn/p/ddc0"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  ClickShowText: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-09-12 21:19:08'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://s1.ax1x.com/2020/09/08/wQQcbq.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">171</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://cdn.ytools.xyz/uPic/hCkxpMdesert-6215514_1920.jpg)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">斯是陋室</a></span><span id="menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><span class="close" id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><h1 class="post-title">对 Node 作为系统架构中间层的一些想法</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-09-12T13:18:05.144Z" title="发表于 2021-09-12 21:18:05">2021-09-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-09-12T13:19:08.051Z" title="更新于 2021-09-12 21:19:08">2021-09-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%9D%A5%E9%83%BD%E6%9D%A5%E4%BA%86/">来都来了</a></span></div><div class="meta-secondline"> <span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/p/ddc0.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/p/ddc0.html" itemprop="commentCount"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><img src="https://cdn.ytools.xyz/uPic/hCkxpMdesert-6215514_1920.jpg"></p>
+<h2 id="Web-发展三部曲"><a href="#Web-发展三部曲" class="headerlink" title="Web 发展三部曲"></a>Web 发展三部曲</h2><h3 id="青铜时代"><a href="#青铜时代" class="headerlink" title="青铜时代"></a>青铜时代</h3><p>在互联网诞生之初，网页还只是一个承载静态信息的载具，只能显示一些纯静态的文本和图片。这种静态页面不能读取后台数据库中的数据，是一个完全封闭的生态，我们姑且称这是 Web 发展的“青铜时代”。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/lAdZwVimage.png"></p>
+<h3 id="白银时代"><a href="#白银时代" class="headerlink" title="白银时代"></a>白银时代</h3><p>而为了使 Web 更加充满活力，开发者们一次又一次的对动态网页这一高地发起进攻，主要目标是允许网络开发人员快速编写动态页面。这一个阶段，以 PHP、JSP、ASP.NET 为代表的动态页面技术相继诞生。在这些动态页面技术面前，网页不再是静止的，可以根据不同的人，不同的地域，不同的时间段呈现出不同的数据结果，从这时开始，Web 发展进入了其“白银时代”。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/6HYWGuimage%20(1).png"></p>
+<h3 id="黄金时代？？？"><a href="#黄金时代？？？" class="headerlink" title="黄金时代？？？"></a>黄金时代？？？</h3><p>随后，各种各样的网站如雨后春笋般出现，网站的复杂程度也呈爆炸式增长，程序员既绘制页面又控制业务逻辑的难度也越来越大，这时，前后端分离的概念被提出来了。核心理念是<strong>「让专业的人做专业的事」</strong>。于是，程序员的职业发展来到了一个分叉点，是选择专门绘制页面的程序员还是专门控制业务逻辑的程序员成为了一个争论点，直至今日。<br><img src="https://cdn.ytools.xyz/uPic/ervGQQimage%20(2).png"><br>在这个阶段，前端是完全不需要参与后台的数据处理，他只需要利用约定好的接口拿到合适的数据，然后渲染页面即可。而且这么做的一个好处是，开发进度不会堵塞，后端开发不需要等待前端完成之后才能继续，只要 Mock 完整数据之后前后端联调即可。</p>
+<h4 id="前后端分离的挑战"><a href="#前后端分离的挑战" class="headerlink" title="前后端分离的挑战"></a>前后端分离的挑战</h4><p>那这个阶段，是 Web 发展的“黄金时代”吗？</p>
+<p>私以为不是。</p>
+<p>前后端分离是一个非常好的思想，让专业的人做专业的事情这一美好愿景，在实际的过程中却受到了很多挑战。<br>举个例子，前端的接口通常是按照逻辑来展现数据的，有时候为了提高效率，后端会根据前端需要的数据结构做数据封装。这就意味着后端还是做了 view 层的工作，违背了前后端分离的初衷。</p>
+<h2 id="Web-系统架构的中间层"><a href="#Web-系统架构的中间层" class="headerlink" title="Web 系统架构的中间层"></a>Web 系统架构的中间层</h2><p>为了解决上述问题，有人提议干脆把 Controller 和 View 的工作都转移到前端，后端只负责处理 Model 的数据与底层逻辑。于是 Node 中间层这个解决方案就被提出来了，这种方案好不好我们暂且按下不表，先来说说这一个中间层的职能是什么以及架构是什么样的。</p>
+<h3 id="中间层架构"><a href="#中间层架构" class="headerlink" title="中间层架构"></a>中间层架构</h3><p><img src="https://cdn.ytools.xyz/uPic/wUz3uvimage%20(3).png"></p>
+<p>其实中间层要做的事很简单。</p>
+<p>原来客户端直接向 Server 发送请求，Server 层收到请求后经过计算处理将结果返回给浏览器。如今浏览器将请求发送给 node 层，node 层经过一轮处理后再向 Server 层发起请求。Server 层处理完毕将响应结果返回给 node 层，node 层最后将数据返回给浏览器。因为 node 层的出现，Server 层可以只用关注业务本身，而不必理会前端对字段的特殊要求。</p>
+<p>而且，由于增加了 NodeJS 层，每种前端的界面展示逻辑由 NodeJS 层自己维护。产品经理在中途如果想要改动界面，可以由前端自己维护，无需后端操心。前后端各司其职，后端专注于自己的业务逻辑开发，前端专注于产品效果开发。这样就实现了更彻底的前后端分离。</p>
+<p>乍一看是不是觉得这个方案很完美呢？但事实真的是这样吗？</p>
+<h2 id="太阳底下无新事"><a href="#太阳底下无新事" class="headerlink" title="太阳底下无新事"></a>太阳底下无新事</h2><p>细心留意文章里的图，就会发现整个系统越来越复杂，系统复杂会带来很多问题，比如人员沟通成本增加，系统整体性能下降，安全隐患增加等等。这些都是老生常谈的，只要是增加系统的层级就一定会出现这些问题，还有什么其他的问题吗？</p>
+<p>我们先思考一个事情，这些东西是不是非 Node 不能做？</p>
+<p>显然不是。在 Node 做中间层之前，这些工作本来就是由传统的后端去统一做的，理论上只要在服务层做好分层架构的设计，这些问题都会迎刃而解，那么为什么这几年还会有人鼓吹 Node 中间层呢？</p>
+<p>有人会说 Node 很适合做 SSR（服务端渲染）。的确这是 Node 的一个优势，但还是那个问题，这件事是不是非 Node 不可？</p>
+<p>现在使用 Node 做 SSR 的，是不是觉得设计理念和多年前的 JSP 很相似呢？</p>
+<p>那么究竟是什么原因，让这么多人去探索这条道路呢？</p>
+<p>下面是我的私货环节。</p>
+<h3 id="我的观点"><a href="#我的观点" class="headerlink" title="我的观点"></a>我的观点</h3><p>事先申明，以下内容，纯属个人观点，不喜勿喷。</p>
+<p>我们先来看一个段子：<strong>「PHP 是世界上最好的语言」</strong></p>
+<p>相信听到这句话的人一定会觉得很好笑，虽然这已经成为了一个段子，但是反应的却是一个客观存在的情况——鄙视链。</p>
+<p><img src="https://cdn.ytools.xyz/uPic/1aJ3qaimage%20(4).png"></p>
+<p><strong>鄙视像条食物链，是个绕不开的怪圈。在这个怪圈中，每一个人，都在链条的最末端。</strong></p>
+<p>而之所以会有这样的鄙视链出现，和工作难度及待遇有很大关系。</p>
+<p>一个好的系统应该是 <strong>高可用的、高并发以及高性能</strong> 的，而这三者，通常是后端程序员的事情，前端程序员所能发挥的作用有限。干的活不重要，待遇自然提不起来，鄙视链也应运而生了。</p>
+<p>于是，为了反击，学习成本低、可以迅速上手的 NodeJS 便被前端程序员们寄予厚望，开始接管一些后端程序员不愿意去做的边角活（数据格式转换，字段校验），想着前端负责的职能不再是绘制页面这种基础的事情，重要性就会逐渐凸显出来。</p>
+<p>说到底，还是因为前端要提升在业务中的比重，由此提升自己的地位。至于 NodeJS 和传统服务端语言相比究竟有没有一战之力，似乎也就没那么重要了。说不定未来 Node 中间层发展好了之后，再进行解耦拆分也说不定呢。</p>
+<p>于是你会发现，公司里的前端同学往往会以架构设计为理由推动后端人员在整个系统设计时增加一个 Node 中间层，好让他们大展拳脚，至于后端人员愿不愿意去把这些边角工作交由 Node 层人员去做就值得商榷了（毕竟后端也有很多方案处理这种数据需求，比如 GraphQL 就是其中一种)。</p>
+<p>套用盗墓笔记里的一句话，<strong><em>「最复杂的不是软件系统，是人心」</em></strong>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">YueYong</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.liangyueyong.cn/p/ddc0.html">https://blog.liangyueyong.cn/p/ddc0.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.liangyueyong.cn" target="_blank">斯是陋室</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%89%8D%E5%90%8E%E7%AB%AF%E5%88%86%E7%A6%BB/">前后端分离</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.ytools.xyz/uPic/hCkxpMdesert-6215514_1920.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/p/3cd1.html"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">从SSO出发谈谈登录态保护</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" src="https://s1.ax1x.com/2020/09/08/wQQcbq.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">YueYong</div><div class="author-info__description">凡是过往，皆为序章</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">171</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/YueYongDEV"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/YueYongDEV" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yueyong1030@outlook.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">微信公众号「01二进制」</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Web-%E5%8F%91%E5%B1%95%E4%B8%89%E9%83%A8%E6%9B%B2"><span class="toc-number">1.</span> <span class="toc-text">Web 发展三部曲</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%92%E9%93%9C%E6%97%B6%E4%BB%A3"><span class="toc-number">1.1.</span> <span class="toc-text">青铜时代</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%99%BD%E9%93%B6%E6%97%B6%E4%BB%A3"><span class="toc-number">1.2.</span> <span class="toc-text">白银时代</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%BB%84%E9%87%91%E6%97%B6%E4%BB%A3%EF%BC%9F%EF%BC%9F%EF%BC%9F"><span class="toc-number">1.3.</span> <span class="toc-text">黄金时代？？？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%89%8D%E5%90%8E%E7%AB%AF%E5%88%86%E7%A6%BB%E7%9A%84%E6%8C%91%E6%88%98"><span class="toc-number">1.3.1.</span> <span class="toc-text">前后端分离的挑战</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Web-%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E7%9A%84%E4%B8%AD%E9%97%B4%E5%B1%82"><span class="toc-number">2.</span> <span class="toc-text">Web 系统架构的中间层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E9%97%B4%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">中间层架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%AA%E9%98%B3%E5%BA%95%E4%B8%8B%E6%97%A0%E6%96%B0%E4%BA%8B"><span class="toc-number">3.</span> <span class="toc-text">太阳底下无新事</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%88%91%E7%9A%84%E8%A7%82%E7%82%B9"><span class="toc-number">3.1.</span> <span class="toc-text">我的观点</span></a></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/p/ddc0.html" title="对 Node 作为系统架构中间层的一些想法"><img src="https://cdn.ytools.xyz/uPic/hCkxpMdesert-6215514_1920.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="对 Node 作为系统架构中间层的一些想法"/></a><div class="content"><a class="title" href="/p/ddc0.html" title="对 Node 作为系统架构中间层的一些想法">对 Node 作为系统架构中间层的一些想法</a><time datetime="2021-09-12T13:18:05.144Z" title="发表于 2021-09-12 21:18:05">2021-09-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/3cd1.html" title="从SSO出发谈谈登录态保护"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从SSO出发谈谈登录态保护"/></a><div class="content"><a class="title" href="/p/3cd1.html" title="从SSO出发谈谈登录态保护">从SSO出发谈谈登录态保护</a><time datetime="2021-08-22T06:17:14.562Z" title="发表于 2021-08-22 14:17:14">2021-08-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/e8f2.html" title="【译】通过 Redis 构建一个响应式架构"><img src="https://cdn.ytools.xyz/uPic/nHfZvj1*6lsjEFol6Hj11gaifU2feQ.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="【译】通过 Redis 构建一个响应式架构"/></a><div class="content"><a class="title" href="/p/e8f2.html" title="【译】通过 Redis 构建一个响应式架构">【译】通过 Redis 构建一个响应式架构</a><time datetime="2021-08-15T14:37:46.010Z" title="发表于 2021-08-15 22:37:46">2021-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/10d8.html" title="深入浅出序列化（2）——Kryo序列化"><img src="https://tva1.sinaimg.cn/large/008i3skNly1gt8g21vixjj309f040glp.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="深入浅出序列化（2）——Kryo序列化"/></a><div class="content"><a class="title" href="/p/10d8.html" title="深入浅出序列化（2）——Kryo序列化">深入浅出序列化（2）——Kryo序列化</a><time datetime="2021-08-08T08:37:50.806Z" title="发表于 2021-08-08 16:37:50">2021-08-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/p/35e3.html" title="一次跨域问题的分析"><img src="https://cdn.ytools.xyz/uPic/NYnfBucontent_SSD_Awarded.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="一次跨域问题的分析"/></a><div class="content"><a class="title" href="/p/35e3.html" title="一次跨域问题的分析">一次跨域问题的分析</a><time datetime="2021-08-04T15:53:14.366Z" title="发表于 2021-08-04 23:53:14">2021-08-04</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2017 - 2021 By YueYong</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a target="_blank" rel="noopener" href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'U0W7ATmVTjBxWkHt96LR9Bj0-gzGzoHsz',
+      appKey: 'uko1Os2bkFSID34qVRrgjCcX',
+      placeholder: '记得留下你的昵称和邮箱....可以快速收到回复',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: true,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: {"tv_doge":"6ea59c827c414b4a2955fe79e0f6fd3dcd515e24.png","tv_親親":"a8111ad55953ef5e3be3327ef94eb4a39d535d06.png","tv_偷笑":"bb690d4107620f1c15cff29509db529a73aee261.png","tv_再見":"180129b8ea851044ce71caf55cc8ce44bd4a4fc8.png","tv_冷漠":"b9cbc755c2b3ee43be07ca13de84e5b699a3f101.png","tv_發怒":"34ba3cd204d5b05fec70ce08fa9fa0dd612409ff.png","tv_發財":"34db290afd2963723c6eb3c4560667db7253a21a.png","tv_可愛":"9e55fd9b500ac4b96613539f1ce2f9499e314ed9.png","tv_吐血":"09dd16a7aa59b77baa1155d47484409624470c77.png","tv_呆":"fe1179ebaa191569b0d31cecafe7a2cd1c951c9d.png","tv_嘔吐":"9f996894a39e282ccf5e66856af49483f81870f3.png","tv_困":"241ee304e44c0af029adceb294399391e4737ef2.png","tv_壞笑":"1f0b87f731a671079842116e0991c91c2c88645a.png","tv_大佬":"093c1e2c490161aca397afc45573c877cdead616.png","tv_大哭":"23269aeb35f99daee28dda129676f6e9ea87934f.png","tv_委屈":"d04dba7b5465779e9755d2ab6f0a897b9b33bb77.png","tv_害羞":"a37683fb5642fa3ddfc7f4e5525fd13e42a2bdb1.png","tv_尷尬":"7cfa62dafc59798a3d3fb262d421eeeff166cfa4.png","tv_微笑":"70dc5c7b56f93eb61bddba11e28fb1d18fddcd4c.png","tv_思考":"90cf159733e558137ed20aa04d09964436f618a1.png","tv_驚嚇":"0d15c7e2ee58e935adc6a7193ee042388adc22af.png"},
+      enableQQ: true,
+      path: window.location.pathname,
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick,mail'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign({}, initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else $.getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js', initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.querySelector('#vcomment'),loadValine)
+  else setTimeout(() => loadValine(), 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>
